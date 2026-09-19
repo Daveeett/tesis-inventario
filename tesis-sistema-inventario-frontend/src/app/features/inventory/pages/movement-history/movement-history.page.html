@@ -1,0 +1,58 @@
+<div class="page-container">
+  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1>Historial de Movimientos</h1>
+      <p>Trazabilidad completa de entradas, salidas y ajustes de stock.</p>
+    </div>
+    <div class="flex gap-2">
+      <a routerLink="/inventory" class="btn btn-sm border-[#B3CFE5] bg-white text-[#0A1931] hover:bg-[#B3CFE5]/20">
+        <ng-icon name="heroChevronLeft" />
+        Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+    <div *ngIf="loading()" class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-md text-[#1A3D63]"></span>
+    </div>
+
+    <div *ngIf="!loading() && movements().length === 0" class="text-center py-16 text-[#4A7FA7]">
+      <ng-icon name="heroQueueList" class="text-4xl mb-2 text-[#B3CFE5]" />
+      <p class="text-sm font-semibold text-[#0A1931]">No hay movimientos registrados</p>
+      <p class="text-xs mt-1 text-[#4A7FA7]">Los registros de stock aparecerán aquí.</p>
+    </div>
+
+    <div *ngIf="!loading() && movements().length > 0" class="w-full overflow-x-auto">
+      <table class="table table-zebra">
+        <thead>
+          <tr class="bg-[#1A3D63] text-white">
+            <th class="w-[150px] text-white">Fecha</th>
+            <th class="w-[120px] text-white">Tipo</th>
+            <th class="text-white">Producto</th>
+            <th class="text-right w-[100px] text-white">Cant</th>
+            <th class="text-right w-[100px] text-white">Anterior</th>
+            <th class="text-right w-[100px] text-white">Nuevo</th>
+            <th class="w-[200px] text-white">Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of movements()">
+            <td class="text-[#4A7FA7] font-mono text-[11px] uppercase tracking-wider">{{ m.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+            <td>
+              <span class="px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase border rounded-md" [ngClass]="typeLabels[m.type].class">
+                {{ typeLabels[m.type].label || m.type }}
+              </span>
+            </td>
+            <td class="font-semibold text-[#0A1931]">{{ m.product?.name ?? m.productId }}</td>
+            <td class="text-right font-mono font-bold" [ngClass]="{'text-emerald-700': m.quantity > 0, 'text-rose-600': m.quantity < 0}">{{ m.quantity }}</td>
+            <td class="text-right font-mono text-[#4A7FA7]">{{ m.previousStock }}</td>
+            <td class="text-right font-mono font-bold text-[#0A1931]">{{ m.newStock }}</td>
+            <td class="text-[#4A7FA7] truncate max-w-[200px]" title="{{ m.reason }}">{{ m.reason ?? '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

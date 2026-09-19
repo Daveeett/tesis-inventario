@@ -1,0 +1,156 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1>Catálogo de Productos</h1>
+      <p>Gestión completa del inventario de artículos tecnológicos.</p>
+    </div>
+    <a routerLink="/catalog/new"
+      class="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+      <ng-icon name="heroPlusCircle" class="text-lg" />
+      Nuevo Producto
+    </a>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm p-4 flex flex-wrap gap-3 mb-5">
+    <!-- Search -->
+    <div class="flex flex-1 min-w-[220px] items-center border border-[#B3CFE5] rounded-md bg-white focus-within:border-[#4A7FA7] focus-within:ring-1 focus-within:ring-[#4A7FA7]">
+      <span class="px-3 text-[#4A7FA7]">
+        <ng-icon name="heroMagnifyingGlass" />
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="triggerSearch()"
+        placeholder="Buscar por nombre, marca, serie..."
+        class="flex-1 py-2 pr-3 text-sm bg-transparent focus:outline-none placeholder-slate-400"
+      />
+    </div>
+
+    <!-- Brand filter -->
+    <select
+      [(ngModel)]="selectedBrand"
+      (ngModelChange)="triggerSearch()"
+      class="px-3 py-2 border border-[#B3CFE5] rounded-md text-sm bg-white focus:outline-none focus:border-[#4A7FA7] w-44 text-[#0A1931]"
+    >
+      <option value="">Todas las marcas</option>
+      <option *ngFor="let b of brands()" [value]="b">{{ b }}</option>
+    </select>
+
+    <!-- Category filter -->
+    <select
+      [(ngModel)]="selectedCategoryId"
+      (ngModelChange)="triggerSearch()"
+      class="px-3 py-2 border border-[#B3CFE5] rounded-md text-sm bg-white focus:outline-none focus:border-[#4A7FA7] w-48 text-[#0A1931]"
+    >
+      <option value="">Todas las categorías</option>
+      <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-md text-[#1A3D63]"></span>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading() && products().length === 0" class="text-center py-16 text-[#4A7FA7]">
+      <ng-icon name="heroArchiveBox" class="text-4xl mb-2 text-[#B3CFE5]" />
+      <p class="text-sm font-semibold text-[#0A1931]">No se encontraron productos</p>
+      <p class="text-xs mt-1 text-[#4A7FA7]">Intenta con otros filtros o agrega un nuevo producto.</p>
+    </div>
+
+    <!-- Data Table -->
+    <div *ngIf="!loading() && products().length > 0" class="w-full overflow-x-auto">
+      <table class="table table-zebra">
+        <thead>
+          <tr class="bg-[#1A3D63] text-white">
+            <th class="w-12 text-white"></th>
+            <th class="text-white">Producto</th>
+            <th class="text-white">Marca / Modelo</th>
+            <th class="text-white">Serie</th>
+            <th class="text-right w-[90px] text-white">Stock</th>
+            <th class="text-right w-[110px] text-white">P. Venta</th>
+            <th class="text-center w-[90px] text-white">Estado</th>
+            <th class="text-right w-[90px] text-white">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of products()">
+            <!-- Thumbnail -->
+            <td class="!py-2 !px-3">
+              <div class="w-10 h-10 border border-[#B3CFE5]/60 bg-[#F6FAFD] rounded-md overflow-hidden flex items-center justify-center">
+                <img *ngIf="p.imageBase64" [src]="p.imageBase64" [alt]="p.name"
+                  class="w-full h-full object-cover" loading="lazy" />
+                <ng-icon *ngIf="!p.imageBase64" name="heroPhoto" class="text-[#4A7FA7]/60 text-lg" />
+              </div>
+            </td>
+            <td>
+              <div class="font-semibold text-[#0A1931] text-sm">{{ p.name }}</div>
+              <div class="text-xs text-[#4A7FA7] mt-0.5">{{ p.subcategory?.category?.name }} &rsaquo; {{ p.subcategory?.name }}</div>
+            </td>
+            <td class="text-sm text-[#0A1931]">{{ p.brand }} <span class="text-[#4A7FA7]">{{ p.model ? '/ ' + p.model : '' }}</span></td>
+            <td class="font-mono text-[11px] text-[#4A7FA7] uppercase tracking-wider">{{ p.serialNumber ?? '—' }}</td>
+            <td class="text-right">
+              <span class="font-mono font-semibold text-sm"
+                [ngClass]="{'text-rose-600': p.stock <= p.minStock, 'text-emerald-700': p.stock > p.minStock}">
+                {{ p.stock }}
+              </span>
+              <span *ngIf="p.stock <= p.minStock" class="block text-[10px] text-rose-600 font-bold uppercase tracking-wide">bajo</span>
+            </td>
+            <td class="text-right font-mono font-medium text-sm text-[#0A1931]">${{ p.salePrice | number:'1.2-2' }}</td>
+            <td class="text-center">
+              <span class="px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase border rounded-md"
+                [ngClass]="p.isActive
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                  : 'text-[#4A7FA7] bg-[#B3CFE5]/20 border-[#B3CFE5]'">
+                {{ p.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="flex gap-1 justify-end">
+                <button class="p-1.5 text-[#4A7FA7] hover:text-[#0A1931] hover:bg-[#B3CFE5]/20 rounded transition-all" title="Editar" (click)="edit(p.id)">
+                  <ng-icon name="heroPencilSquare" class="text-lg" />
+                </button>
+                <button class="p-1.5 text-[#4A7FA7] hover:text-rose-600 hover:bg-rose-50 rounded transition-all" title="Eliminar"
+                  [disabled]="deleting() === p.id" (click)="delete(p.id)">
+                  <span *ngIf="deleting() === p.id" class="loading loading-spinner loading-xs text-rose-600"></span>
+                  <ng-icon name="heroTrash" class="text-lg" *ngIf="deleting() !== p.id" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-between px-4 py-3 border-t border-[#B3CFE5]/40 bg-[#F6FAFD]/50" *ngIf="totalPages > 1">
+        <span class="text-xs text-[#4A7FA7] font-medium">
+          {{ total }} productos — Página {{ currentPage }} de {{ totalPages }}
+        </span>
+        <div class="flex gap-1">
+          <button class="px-2.5 py-1 border border-[#B3CFE5] text-sm rounded-md disabled:opacity-40 hover:bg-white text-[#0A1931] transition-colors"
+            [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+            <ng-icon name="heroChevronLeft" />
+          </button>
+          <button
+            *ngFor="let pg of pages"
+            class="px-3 py-1 border text-sm rounded-md transition-colors"
+            [ngClass]="pg === currentPage
+              ? 'bg-[#1A3D63] text-white border-[#1A3D63] font-semibold'
+              : 'border-[#B3CFE5] text-[#0A1931] hover:bg-white'"
+            (click)="goToPage(pg)">{{ pg }}</button>
+          <button class="px-2.5 py-1 border border-[#B3CFE5] text-sm rounded-md disabled:opacity-40 hover:bg-white text-[#0A1931] transition-colors"
+            [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+            <ng-icon name="heroChevronRight" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

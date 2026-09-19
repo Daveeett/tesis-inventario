@@ -1,0 +1,331 @@
+<div class="page-container max-w-3xl mx-auto">
+
+  <!-- Header -->
+  <div class="page-header flex items-center justify-between">
+    <div>
+      <h1>{{ isEdit ? 'Editar Producto' : 'Nuevo Producto' }}</h1>
+      <p>{{ isEdit ? 'Modifica los datos del producto' : 'Completa los campos o escanea un código de barras con tu cámara para registrar el producto' }}</p>
+    </div>
+    <a routerLink="/catalog" class="btn btn-sm border-[#B3CFE5] bg-white text-[#0A1931] hover:bg-[#B3CFE5]/20">
+      <ng-icon name="heroChevronLeft" />
+      Volver
+    </a>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center py-16">
+    <span class="loading loading-spinner loading-md text-[#1A3D63]"></span>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="save()" class="space-y-5">
+
+    <!-- Barcode Quick Lookup & Camera Scanner Section -->
+    <div class="bg-[#0A1931] text-white p-5 rounded-xl border border-[#1A3D63] shadow-md">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <ng-icon name="heroQrCode" class="text-xl text-[#B3CFE5]" />
+          <h2 class="text-xs font-bold uppercase tracking-wider text-[#B3CFE5]">Escaneo de Código de Barras / Cámara</h2>
+        </div>
+        <div class="flex gap-2">
+          <!-- Camera Scanner Button -->
+          <button
+            type="button"
+            (click)="startCameraScanner()"
+            class="px-3 py-1.5 bg-[#4A7FA7] hover:bg-[#1A3D63] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm rounded-md"
+          >
+            <ng-icon name="heroCamera" class="text-base" />
+            📷 Abrir Cámara del Móvil
+          </button>
+
+          <!-- Photo Capture Fallback -->
+          <label class="cursor-pointer px-3 py-1.5 bg-[#1A3D63] hover:bg-[#4A7FA7] text-white text-xs font-medium transition-all flex items-center gap-1.5 rounded-md">
+            <ng-icon name="heroPhoto" class="text-base" />
+            Tomar Foto
+            <input type="file" accept="image/*" capture="environment" class="hidden" (change)="onScanPhoto($event)" />
+          </label>
+        </div>
+      </div>
+
+      <p class="text-xs text-[#B3CFE5]/80 mb-3">
+        Haz clic en "📷 Abrir Cámara" para escanear en tiempo real o escribe el código de barras (EAN/UPC/Serial) para autollenar datos de internet.
+      </p>
+
+      <div class="flex gap-2">
+        <input
+          type="text"
+          [(ngModel)]="barcodeSearchInput"
+          [ngModelOptions]="{standalone: true}"
+          (keyup.enter)="lookupBarcode()"
+          placeholder="Ej. 7702004001234 o escanea con la cámara..."
+          class="flex-1 px-3.5 py-2 text-sm bg-white text-[#0A1931] border border-[#B3CFE5] rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A7FA7] font-mono"
+        />
+        <button
+          type="button"
+          (click)="lookupBarcode()"
+          [disabled]="barcodeSearching() || !barcodeSearchInput.trim()"
+          class="px-4 py-2 bg-[#1A3D63] hover:bg-[#4A7FA7] disabled:opacity-50 text-white text-sm font-semibold rounded-md transition-all flex items-center gap-2"
+        >
+          <span *ngIf="barcodeSearching()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+          <ng-icon *ngIf="!barcodeSearching()" name="heroMagnifyingGlass" />
+          {{ barcodeSearching() ? 'Buscando...' : 'Buscar en Internet' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Camera Scanner Overlay / Modal -->
+    <div *ngIf="cameraActive()" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+      <div class="bg-[#0A1931] border border-[#1A3D63] rounded-xl max-w-md w-full p-5 text-white flex flex-col items-center shadow-2xl">
+        <div class="w-full flex items-center justify-between mb-3 border-b border-[#1A3D63] pb-2">
+          <span class="text-sm font-semibold flex items-center gap-2 text-[#B3CFE5]">
+            <ng-icon name="heroCamera" class="text-[#B3CFE5]" />
+            Escaneando Código de Barras...
+          </span>
+          <button (click)="stopCameraScanner()" class="p-1 hover:bg-[#1A3D63] rounded text-[#B3CFE5]">
+            <ng-icon name="heroXMark" class="text-lg" />
+          </button>
+        </div>
+
+        <p class="text-xs text-[#B3CFE5]/80 mb-3 text-center">
+          Apunta la cámara del móvil directamente al código de barras del producto.
+        </p>
+
+        <!-- Video Stream Container -->
+        <div class="relative w-full h-64 bg-black rounded-lg overflow-hidden flex items-center justify-center border-2 border-[#4A7FA7]">
+          <video #scannerVideo class="w-full h-full object-cover" playsinline muted></video>
+          <!-- Scanning Reticle -->
+          <div class="absolute inset-x-8 top-1/2 transform -translate-y-1/2 border-t-2 border-rose-500 shadow-lg animate-pulse"></div>
+        </div>
+
+        <button
+          type="button"
+          (click)="stopCameraScanner()"
+          class="mt-4 px-4 py-2 bg-[#1A3D63] hover:bg-[#4A7FA7] text-[#B3CFE5] text-xs font-semibold uppercase tracking-wider rounded-md w-full">
+          Cancelar Escaneo
+        </button>
+      </div>
+    </div>
+
+    <!-- Success / Error Alert -->
+    <div *ngIf="successMessage()" class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-md flex gap-2 items-start">
+      <ng-icon name="heroCheckCircle" class="shrink-0 mt-0.5" />
+      <span>{{ successMessage() }}</span>
+    </div>
+
+    <div *ngIf="cameraError()" class="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-md flex gap-2 items-start">
+      <ng-icon name="heroExclamationTriangle" class="shrink-0 mt-0.5" />
+      <span>{{ cameraError() }}</span>
+    </div>
+
+    <div *ngIf="error()" class="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-md flex gap-2 items-start">
+      <ng-icon name="heroExclamationTriangle" class="shrink-0 mt-0.5" />
+      <span>{{ error() }}</span>
+    </div>
+
+    <!-- Basic Info -->
+    <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60">
+        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Información Básica</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5" for="name">Nombre del Producto *</label>
+          <input id="name" type="text" formControlName="name"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]"
+            [class.border-rose-500]="form.get('name')?.touched && form.get('name')?.invalid"
+            placeholder="Ej. Laptop HP Pavilion 15" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5" for="brand">Marca *</label>
+          <input id="brand" type="text" formControlName="brand"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]"
+            [class.border-rose-500]="form.get('brand')?.touched && form.get('brand')?.invalid"
+            placeholder="Ej. HP, Samsung, Apple" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5" for="model">Modelo</label>
+          <input id="model" type="text" formControlName="model"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]"
+            placeholder="Ej. Pavilion 15-eg2xxx" />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5" for="serial">Código de Barras / N° Serie</label>
+          <input id="serial" type="text" formControlName="serialNumber"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md font-mono text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]"
+            placeholder="Código único o serie" />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5" for="description">Descripción</label>
+          <textarea id="description" formControlName="description" rows="3"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7] resize-none"
+            placeholder="Descripción breve del producto..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60">
+        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Imagen del Producto</h2>
+      </div>
+      <div class="p-6">
+        <div class="flex gap-6 items-start">
+
+          <!-- Preview -->
+          <div class="w-32 h-32 border border-[#B3CFE5] bg-[#F6FAFD] rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+            <div *ngIf="imageLoading()" class="flex items-center justify-center w-full h-full">
+              <span class="loading loading-spinner loading-sm text-[#1A3D63]"></span>
+            </div>
+            <img *ngIf="imagePreview && !imageLoading()" [src]="imagePreview" alt="Preview" class="w-full h-full object-cover" />
+            <ng-icon *ngIf="!imagePreview && !imageLoading()" name="heroPhoto" class="text-3xl text-[#4A7FA7]/40" />
+          </div>
+
+          <!-- Controls -->
+          <div class="flex flex-col gap-3">
+            <p class="text-sm text-[#4A7FA7]">
+              La imagen se comprime automáticamente antes de guardarse. Si buscas por código de barras, se intentará descargar la imagen oficial del producto.
+            </p>
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-md transition-all shadow-sm w-fit">
+              <ng-icon name="heroArrowUpTray" />
+              Seleccionar imagen
+              <input type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)" />
+            </label>
+            <button *ngIf="imagePreview" type="button"
+              class="inline-flex items-center gap-1.5 text-sm text-rose-600 hover:text-rose-700 font-medium w-fit"
+              (click)="removeImage()">
+              <ng-icon name="heroXMark" />
+              Eliminar imagen
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categorization -->
+    <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60">
+        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Categorización</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">Categoría</label>
+          <select formControlName="categoryId"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm bg-white text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]"
+            (change)="onCategoryChange($any($event.target).value)">
+            <option value="">— Seleccionar categoría —</option>
+            <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">Subcategoría</label>
+          <select formControlName="subcategoryId"
+            class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm bg-white text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7] disabled:opacity-50"
+            [disabled]="!subcategories().length">
+            <option value="">— Seleccionar subcategoría —</option>
+            <option *ngFor="let s of subcategories()" [value]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Pricing & Stock -->
+    <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60">
+        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Precios y Stock</h2>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          <!-- Purchase Price: Hidden for VENDEDOR -->
+          <div *ngIf="!authSvc.isVendedor()">
+            <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">P. Compra *</label>
+            <input type="number" formControlName="purchasePrice" min="0" step="0.01"
+              class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm font-mono text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">P. Venta *</label>
+            <input type="number" formControlName="salePrice" min="0" step="0.01"
+              class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm font-mono text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">Stock Actual</label>
+            <input type="number" formControlName="stock" min="0"
+              class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm font-mono text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">Stock Mínimo</label>
+            <input type="number" formControlName="minStock" min="0"
+              class="w-full px-3 py-2 border border-[#B3CFE5] rounded-md text-sm font-mono text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+          </div>
+
+        </div>
+
+        <div class="mt-4 flex items-center gap-2">
+          <input type="checkbox" id="isActive" formControlName="isActive"
+            class="w-4 h-4 border-[#B3CFE5] accent-[#1A3D63] rounded" />
+          <label for="isActive" class="text-sm font-semibold text-[#0A1931]">Producto activo</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Specifications -->
+    <div class="bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60 flex items-center justify-between">
+        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Especificaciones Técnicas</h2>
+        <button type="button"
+          class="flex items-center gap-1.5 text-xs font-semibold text-[#1A3D63] border border-[#B3CFE5] bg-white px-3 py-1.5 rounded-md hover:bg-[#B3CFE5]/20 transition-all"
+          (click)="addSpec()">
+          <ng-icon name="heroPlusCircle" />
+          Agregar
+        </button>
+      </div>
+      <div class="p-6">
+        <p *ngIf="specKeys.length === 0" class="text-sm text-[#4A7FA7] italic">
+          Sin especificaciones. Haz clic en "Agregar" para añadir (RAM, almacenamiento, etc.)
+        </p>
+        <div *ngFor="let k of specKeys; let i = index" class="flex gap-2 items-center mb-2">
+          <input type="text" [(ngModel)]="specKeys[i]" [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-1.5 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7]"
+            placeholder="Clave (ej. RAM)" />
+          <input type="text" [(ngModel)]="specValues[i]" [ngModelOptions]="{standalone: true}"
+            class="flex-1 px-3 py-1.5 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7]"
+            placeholder="Valor (ej. 16GB)" />
+          <button type="button"
+            class="p-1.5 text-[#4A7FA7] hover:text-rose-600 rounded transition-colors"
+            (click)="removeSpec(i)">
+            <ng-icon name="heroXMark" class="text-lg" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pb-8">
+      <button type="button"
+        class="px-4 py-2 text-sm font-semibold text-[#0A1931] border border-[#B3CFE5] bg-white rounded-md hover:bg-[#B3CFE5]/20 transition-all"
+        (click)="cancel()">Cancelar</button>
+      <button
+        type="submit"
+        class="flex items-center gap-2 px-5 py-2 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-md transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="form.invalid || saving()">
+        <span *ngIf="saving()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+        <ng-icon *ngIf="!saving()" name="heroCheck" />
+        {{ saving() ? 'Guardando...' : (isEdit ? 'Guardar cambios' : 'Crear producto') }}
+      </button>
+    </div>
+
+  </form>
+</div>
+

@@ -1,0 +1,100 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Gestión de Categorías</h1>
+    <p>Organiza el catálogo mediante categorías y subcategorías dinámicas.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Categories Column -->
+    <div class="space-y-5">
+      <div class="card bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-6">
+          <h2 class="card-title text-base text-[#0A1931] font-bold">Nueva Categoría</h2>
+          <div class="space-y-3 mt-2">
+            <input type="text" [(ngModel)]="catName" placeholder="Nombre de la categoría" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+            <input type="text" [(ngModel)]="catDesc" placeholder="Descripción (opcional)" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+            <button class="w-full py-2.5 px-4 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-md transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50" [disabled]="!catName.trim() || savingCat" (click)="addCategory()">
+              <span *ngIf="savingCat" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+              <ng-icon name="heroPlusCircle" class="text-lg" *ngIf="!savingCat" />
+              Agregar Categoría
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-0">
+          <div class="px-5 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60 font-bold text-xs text-[#0A1931] uppercase tracking-wider">
+            Categorías ({{ categories().length }})
+          </div>
+          <div *ngIf="loading()" class="flex justify-center py-6">
+            <span class="loading loading-spinner text-[#1A3D63]"></span>
+          </div>
+          <ul class="divide-y divide-[#B3CFE5]/30">
+            <li *ngFor="let c of categories()" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#B3CFE5]/10 transition-colors">
+              <div>
+                <span class="font-semibold text-sm text-[#0A1931]">{{ c.name }}</span>
+                <span class="px-2 py-0.5 text-xs font-semibold rounded bg-[#B3CFE5]/30 text-[#1A3D63] border border-[#B3CFE5] ml-2">{{ c.subcategories?.length ?? 0 }} subcats</span>
+                <p *ngIf="c.description" class="text-xs text-[#4A7FA7] mt-0.5">{{ c.description }}</p>
+              </div>
+              <button class="p-1.5 text-[#4A7FA7] hover:text-rose-600 hover:bg-rose-50 rounded transition-all" (click)="deleteCategory(c.id)">
+                <ng-icon name="heroTrash" class="text-lg" />
+              </button>
+            </li>
+            <li *ngIf="!loading() && categories().length === 0" class="px-5 py-6 text-center text-[#4A7FA7] text-sm italic">
+              Sin categorías creadas.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subcategories Column -->
+    <div class="space-y-5">
+      <div class="card bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-6">
+          <h2 class="card-title text-base text-[#0A1931] font-bold">Nueva Subcategoría</h2>
+          <div class="space-y-3 mt-2">
+            <select [(ngModel)]="subCategoryId" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm bg-white text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]">
+              <option value="">— Seleccionar categoría padre —</option>
+              <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+            </select>
+            <input type="text" [(ngModel)]="subName" placeholder="Nombre de la subcategoría" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+            <input type="text" [(ngModel)]="subDesc" placeholder="Descripción (opcional)" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" />
+            <button class="w-full py-2.5 px-4 bg-[#4A7FA7] hover:bg-[#1A3D63] text-white text-sm font-semibold rounded-md transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50" [disabled]="!subName.trim() || !subCategoryId || savingSub" (click)="addSubcategory()">
+              <span *ngIf="savingSub" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+              <ng-icon name="heroPlusCircle" class="text-lg" *ngIf="!savingSub" />
+              Agregar Subcategoría
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl overflow-hidden">
+        <div class="card-body p-0">
+          <div class="px-5 py-3.5 border-b border-[#B3CFE5]/40 bg-[#F6FAFD]/60 font-bold text-xs text-[#0A1931] uppercase tracking-wider">
+            Subcategorías ({{ subcategories().length }})
+          </div>
+          <ul class="divide-y divide-[#B3CFE5]/30">
+            <li *ngFor="let s of subcategories()" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#B3CFE5]/10 transition-colors">
+              <div>
+                <span class="font-semibold text-sm text-[#0A1931]">{{ s.name }}</span>
+                <span class="px-2 py-0.5 text-xs font-semibold rounded bg-[#F6FAFD] text-[#4A7FA7] border border-[#B3CFE5] ml-2">{{ s.category?.name }}</span>
+                <p *ngIf="s.description" class="text-xs text-[#4A7FA7] mt-0.5">{{ s.description }}</p>
+              </div>
+              <button class="p-1.5 text-[#4A7FA7] hover:text-rose-600 hover:bg-rose-50 rounded transition-all" (click)="deleteSubcategory(s.id)">
+                <ng-icon name="heroTrash" class="text-lg" />
+              </button>
+            </li>
+            <li *ngIf="!loading() && subcategories().length === 0" class="px-5 py-6 text-center text-[#4A7FA7] text-sm italic">
+              Sin subcategorías creadas.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+

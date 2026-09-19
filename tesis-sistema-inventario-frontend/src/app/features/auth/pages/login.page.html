@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-[#F6FAFD] flex flex-col items-center justify-center p-4 sm:p-8">
+  
+  <!-- Logo & Title -->
+  <div class="mb-8 flex flex-col items-center">
+    <div class="w-14 h-14 bg-[#0A1931] border border-[#1A3D63] rounded-xl flex items-center justify-center mb-3 shadow-md">
+      <ng-icon name="heroBuildingStorefront" class="text-3xl text-[#B3CFE5]" />
+    </div>
+    <h1 class="text-2xl font-bold tracking-tight text-[#0A1931]">INNOVATECNO</h1>
+    <p class="text-[#4A7FA7] text-sm mt-1 font-medium">Sistema de Inventario</p>
+  </div>
+
+  <!-- Login Panel -->
+  <div class="w-full max-w-[400px] bg-white border border-[#B3CFE5]/60 shadow-xl rounded-xl p-8">
+    
+    <div *ngIf="error" class="mb-6 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-md flex gap-2 items-start">
+      <ng-icon name="heroExclamationTriangle" class="text-lg shrink-0 mt-0.5 text-rose-600" />
+      <span>{{ error }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+      <div>
+        <label for="email" class="block text-sm font-semibold text-[#0A1931] mb-1.5">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="usuario@innovatecno.com"
+          class="w-full px-3.5 py-2.5 bg-white border border-[#B3CFE5] rounded-md placeholder-slate-400 focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7] transition-all text-sm"
+          [ngClass]="{'border-rose-500 focus:border-rose-500 focus:ring-rose-500': form.get('email')?.touched && form.get('email')?.invalid}"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-semibold text-[#0A1931] mb-1.5">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          class="w-full px-3.5 py-2.5 bg-white border border-[#B3CFE5] rounded-md placeholder-slate-400 focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7] transition-all text-sm"
+          [ngClass]="{'border-rose-500 focus:border-rose-500 focus:ring-rose-500': form.get('password')?.touched && form.get('password')?.invalid}"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-[#1A3D63] hover:bg-[#0A1931] text-white font-semibold text-sm py-2.5 px-4 rounded-md transition-all duration-150 shadow-sm mt-2 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+        [disabled]="loading"
+      >
+        <span *ngIf="loading" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+        {{ loading ? 'Iniciando sesión...' : 'Ingresar' }}
+      </button>
+    </form>
+    
+  </div>
+</div>
+

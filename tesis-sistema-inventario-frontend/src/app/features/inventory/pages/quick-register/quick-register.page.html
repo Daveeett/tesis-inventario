@@ -1,0 +1,116 @@
+<div class="page-container max-w-4xl mx-auto">
+
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between page-header gap-4">
+    <div>
+      <h1>Registro Rápido de Mercadería (Entrada)</h1>
+      <p>Ingresa múltiples productos de una sola vez para reducir el tiempo de registro.</p>
+    </div>
+    <a routerLink="/inventory/history" class="btn btn-sm border-[#B3CFE5] bg-white text-[#0A1931] hover:bg-[#B3CFE5]/20">
+      <ng-icon name="heroQueueList" />
+      Ver Historial
+    </a>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="success()" class="p-3 mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-md flex gap-2 items-center">
+    <ng-icon name="heroCheck" class="text-emerald-600 text-lg" />
+    <span>{{ success() }}</span>
+  </div>
+  <div *ngIf="error()" class="p-3 mb-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-md flex gap-2 items-center">
+    <ng-icon name="heroExclamationTriangle" class="text-rose-600 text-lg" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <div class="card bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl overflow-hidden">
+    <div class="card-body p-6">
+
+      <!-- Loading -->
+      <div *ngIf="loading()" class="flex justify-center py-8">
+        <span class="loading loading-spinner loading-lg text-[#1A3D63]"></span>
+      </div>
+
+      <ng-container *ngIf="!loading()">
+        <!-- Reason -->
+        <div class="mb-5">
+          <label class="block text-sm font-semibold text-[#0A1931] mb-1.5">Motivo de entrada</label>
+          <input type="text" [(ngModel)]="reason" class="w-full px-3.5 py-2 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] focus:outline-none focus:border-[#4A7FA7] focus:ring-1 focus:ring-[#4A7FA7]" placeholder="Ej. Compra a proveedor, reposición..." />
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto rounded-lg border border-[#B3CFE5]/40 mb-5">
+          <table class="table table-sm">
+            <thead>
+              <tr class="bg-[#1A3D63] text-white">
+                <th class="w-1/2 text-white">Producto</th>
+                <th class="w-28 text-center text-white">Stock Actual</th>
+                <th class="w-36 text-center text-white">Cantidad a Ingresar</th>
+                <th class="w-12 text-center text-white"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items; let i = index" class="hover:bg-[#B3CFE5]/10">
+                <td class="py-2.5">
+                  <select
+                    [(ngModel)]="item.productId"
+                    (ngModelChange)="onProductSelect(i)"
+                    class="w-full px-3 py-1.5 border border-[#B3CFE5] rounded-md text-sm bg-white text-[#0A1931] focus:outline-none focus:border-[#4A7FA7]"
+                  >
+                    <option value="">— Seleccionar producto —</option>
+                    <option *ngFor="let p of products()" [value]="p.id">
+                      {{ p.name }} ({{ p.brand }})
+                    </option>
+                  </select>
+                </td>
+                <td class="text-center py-2.5">
+                  <span *ngIf="item.productId" class="px-2 py-0.5 text-xs font-bold rounded-md"
+                    [class.bg-rose-100]="item.currentStock <= 0"
+                    [class.text-rose-700]="item.currentStock <= 0"
+                    [class.bg-amber-100]="item.currentStock > 0 && item.currentStock <= 5"
+                    [class.text-amber-800]="item.currentStock > 0 && item.currentStock <= 5"
+                    [class.bg-emerald-100]="item.currentStock > 5"
+                    [class.text-emerald-800]="item.currentStock > 5">
+                    {{ item.currentStock }}
+                  </span>
+                  <span *ngIf="!item.productId" class="text-[#4A7FA7]/40">—</span>
+                </td>
+                <td class="py-2.5">
+                  <input
+                    type="number"
+                    [(ngModel)]="item.quantity"
+                    class="w-full px-3 py-1.5 border border-[#B3CFE5] rounded-md text-sm text-[#0A1931] text-center font-mono focus:outline-none focus:border-[#4A7FA7]"
+                    min="1"
+                  />
+                </td>
+                <td class="text-center py-2.5">
+                  <button class="p-1.5 text-[#4A7FA7] hover:text-rose-600 hover:bg-rose-50 rounded transition-all disabled:opacity-30" [disabled]="items.length === 1" (click)="removeRow(i)">
+                    <ng-icon name="heroXMark" class="text-lg" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between mt-4">
+          <button type="button" class="px-4 py-2 text-sm font-semibold text-[#0A1931] border border-[#B3CFE5] bg-white rounded-md hover:bg-[#B3CFE5]/20 transition-all flex items-center gap-2" (click)="addRow()">
+            <ng-icon name="heroPlusCircle" class="text-lg" />
+            Agregar fila
+          </button>
+          <button
+            type="button"
+            class="px-5 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-md transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
+            [disabled]="saving()"
+            (click)="register()"
+          >
+            <span *ngIf="saving()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
+            <ng-icon name="heroArrowDownTray" class="text-lg" *ngIf="!saving()" />
+            {{ saving() ? 'Registrando...' : 'Registrar Entrada' }}
+          </button>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
