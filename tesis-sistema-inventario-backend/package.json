@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
+    "seed:prod": "ts-node src/scripts/seed-products.ts",
     "build:local": "tsc"
   },
   "keywords": [],

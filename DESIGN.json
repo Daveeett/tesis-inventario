@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T17:50:40Z",
+  "title": "Design System: InnovaTecno Inventario",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Navy Ocean", "canonical": "#1A3D63" },
+      "primary-dark": { "role": "primary-dark", "displayName": "Navy Dark", "canonical": "#0A1931" },
+      "secondary": { "role": "secondary", "displayName": "Blue Slate", "canonical": "#4A7FA7" },
+      "accent": { "role": "accent", "displayName": "Blue Ice", "canonical": "#B3CFE5" },
+      "neutral-bg": { "role": "neutral-bg", "displayName": "Blue Soft Surface", "canonical": "#F6FAFD" },
+      "card-bg": { "role": "card-bg", "displayName": "Card Base White", "canonical": "#FFFFFF" },
+      "text-main": { "role": "text-main", "displayName": "Text Primary", "canonical": "#0A1931" },
+      "success": { "role": "semantic", "displayName": "Stock Normal", "canonical": "#10B981" },
+      "warning": { "role": "semantic", "displayName": "Stock Bajo", "canonical": "#F59E0B" },
+      "error": { "role": "semantic", "displayName": "Agotado / Error", "canonical": "#EF4444" }
+    },
+    "shadows": [
+      { "name": "flat", "value": "none", "purpose": "Superficie plana estándar con borde sutil." },
+      { "name": "floating", "value": "0 10px 15px -3px rgba(10, 25, 49, 0.1)", "purpose": "Elevación para modales y dropdowns." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Botón principal de acción (e.g. Guardar producto, Registrar movimiento).",
+      "html": "<button class=\"ds-btn-primary\">Guardar Producto</button>",
+      "css": ".ds-btn-primary { background: #1A3D63; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-family: Geist, sans-serif; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background 0.2s ease; } .ds-btn-primary:hover { background: #0A1931; }"
+    },
+    {
+      "name": "Card Container",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Contenedor principal para datos y métricas.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Total Stock</h3><p class=\"ds-card-value\">1,248</p></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; font-family: Geist, sans-serif; } .ds-card-title { color: #4A7FA7; font-size: 14px; font-weight: 500; margin: 0 0 8px 0; } .ds-card-value { color: #0A1931; font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Precision Operations Control",
+    "overview": "Un sistema de diseño orientado a operaciones de inventario en tiempo real. Combina la sobriedad del azul marino profundo con superficies limpias en blanco y tonos azulados suaves para lograr alta claridad y mínima fatiga visual.",
+    "keyCharacteristics": [
+      "Estructura clara con bordes sutiles y contraste optimizado.",
+      "Acción ágil con botones principales contrastados.",
+      "Estado semántico destacado para alertas de stock."
+    ],
+    "rules": [
+      { "name": "The Single Accent Rule", "body": "El color primario Navy Ocean lidera la interfaz; los colores semánticos solo se utilizan cuando indican un estado real de inventario.", "section": "colors" },
+      { "name": "The Flat-By-Default Rule", "body": "Las tarjetas y tablas permanecen planas en reposo con bordes limpios en #E2E8F0.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do mantener el uso de JetBrains Mono para códigos SKU, existencias numéricas y precios.",
+      "Do utilizar badges con icono + texto para representar estados de stock."
+    ],
+    "donts": [
+      "Don't utilizar modales invasivos para acciones simples de registro rápido.",
+      "Don't aplicar bordes laterales gruesos ni sombras pesadas estilo Bootstrap 3."
+    ]
+  }
+}

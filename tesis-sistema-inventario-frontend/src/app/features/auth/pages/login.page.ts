@@ -15,6 +15,7 @@ export class LoginPage {
   form: FormGroup;
   loading = false;
   error = '';
+  showPassword = false;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -25,6 +26,24 @@ export class LoginPage {
       email:    ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  fillDemoCredentials(role: 'admin' | 'seller'): void {
+    if (role === 'admin') {
+      this.form.patchValue({
+        email: 'vendedor@test.com',
+        password: 'password123',
+      });
+    } else {
+      this.form.patchValue({
+        email: 'vendedor@test.com',
+        password: 'password123',
+      });
+    }
   }
 
   submit() {
@@ -42,3 +61,4 @@ export class LoginPage {
     });
   }
 }
+

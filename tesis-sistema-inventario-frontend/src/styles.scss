@@ -3,20 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Global Palette CSS Variables & DaisyUI Overrides ── */
+/* ── Global Palette CSS Variables & Custom System Tokens ── */
 :root {
-  /* User Color Palette */
   --color-navy-dark: #0A1931;
   --color-navy-ocean: #1A3D63;
   --color-blue-slate: #4A7FA7;
   --color-blue-ice: #B3CFE5;
   --color-blue-soft: #F6FAFD;
 
-  /* DaisyUI Border Radii */
-  --rounded-box: 0.5rem;
-  --rounded-btn: 0.375rem;
+  --rounded-box: 0.75rem;
+  --rounded-btn: 0.5rem;
   --rounded-badge: 0.375rem;
-  --tab-radius: 0.375rem;
+  --tab-radius: 0.5rem;
   
   --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -34,6 +32,8 @@ html, body {
   font-family: var(--font-sans);
   background-color: var(--color-blue-soft);
   color: var(--color-navy-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Scrollbar */
@@ -47,21 +47,21 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-blue-ice);
-  border-radius: 3px;
+  background: #CBD5E1;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-blue-slate);
 }
 
-/* ── Page Layout Utility ── */
+/* ── Layout Utilities ── */
 .page-container {
-  @apply p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto;
+  @apply p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto;
 }
 
 .page-header {
-  @apply mb-6 pb-4 border-b border-[#B3CFE5]/40;
+  @apply mb-6 pb-4 border-b border-[#B3CFE5]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4;
 }
 
 .page-header h1 {
@@ -69,68 +69,70 @@ html, body {
 }
 
 .page-header p {
-  @apply text-[#4A7FA7] text-sm mt-1 mb-0;
+  @apply text-[#4A7FA7] text-sm mt-1 mb-0 font-medium;
 }
 
-/* ── Card Styles ── */
-.card-shadow {
-  @apply bg-white border border-[#B3CFE5]/50 shadow-sm rounded-lg transition-all duration-200;
+/* ── Card Elevation ── */
+.card-flat {
+  @apply bg-white border border-slate-200/80 rounded-xl shadow-sm transition-all duration-200;
+}
+
+.card-flat-hover {
+  @apply bg-white border border-slate-200/80 rounded-xl shadow-sm hover:shadow-md hover:border-[#4A7FA7]/40 transition-all duration-200;
 }
 
 .card-navy {
-  @apply bg-[#0A1931] text-white border border-[#1A3D63] shadow-md rounded-lg;
+  @apply bg-[#0A1931] text-white border border-[#1A3D63] shadow-md rounded-xl;
 }
 
 /* ── Table Customization ── */
 .table {
-  @apply text-sm w-full;
+  @apply text-sm w-full border-collapse;
 }
 
 .table th {
-  @apply bg-[#1A3D63] text-white font-semibold tracking-wider uppercase text-xs border-b border-[#0A1931] py-3 px-4;
+  @apply bg-[#1A3D63] text-white font-semibold tracking-wider uppercase text-xs border-b border-[#0A1931] py-3.5 px-4 text-left;
 }
 
 .table td {
-  @apply border-b border-[#B3CFE5]/30 py-3 px-4 text-[#0A1931];
+  @apply border-b border-slate-100 py-3.5 px-4 text-[#0A1931] align-middle;
 }
 
 .table-zebra tbody tr:nth-child(even) {
-  @apply bg-[#F6FAFD]/70;
+  @apply bg-[#F6FAFD]/60;
 }
 
 .table-zebra tbody tr:hover {
-  @apply bg-[#B3CFE5]/20 transition-colors;
+  @apply bg-[#B3CFE5]/15 transition-colors;
 }
 
-/* ── Form Inputs Focus & Styling ── */
+/* ── Form Control Overrides ── */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
 select,
 textarea {
-  @apply transition-colors duration-150;
+  @apply transition-all duration-150 rounded-lg border-slate-300 focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 outline-none;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  @apply border-[#4A7FA7] ring-1 ring-[#4A7FA7] outline-none;
+/* ── Stock Badges ── */
+.badge-stock-ok {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80;
 }
 
-/* ── Badges ── */
-.badge-ice {
-  @apply bg-[#B3CFE5]/30 text-[#1A3D63] border border-[#B3CFE5] font-medium;
+.badge-stock-low {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80;
 }
 
-.badge-navy {
-  @apply bg-[#1A3D63] text-white font-medium;
+.badge-stock-empty {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/80;
 }
 
 /* Font Mono Utility */
 .font-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
 }
+
 

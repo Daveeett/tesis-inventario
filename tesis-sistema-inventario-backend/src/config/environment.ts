@@ -10,11 +10,13 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   FRONTEND_BASE_URL: z.string().default("http://localhost:4200"),
+  DATABASE_URL: z.string().optional(),
+  POSTGRES_URL: z.string().optional(),
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5432),
   DB_USER: z.string().default("postgres"),
   DB_PASSWORD: z.string().default("postgres"),
-  DB_DATABASE: z.string().default("innovatecno_inventario"),
+  DB_DATABASE: z.string().default(process.env.DB_NAME || "innovatecno_inventario"),
   DB_SSL: z
     .string()
     .optional()

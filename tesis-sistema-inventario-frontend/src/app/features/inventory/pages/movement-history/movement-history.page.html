@@ -24,35 +24,38 @@
     </div>
 
     <div *ngIf="!loading() && movements().length > 0" class="w-full overflow-x-auto">
-      <table class="table table-zebra">
+      <table class="table table-zebra w-full">
         <thead>
           <tr class="bg-[#1A3D63] text-white">
-            <th class="w-[150px] text-white">Fecha</th>
-            <th class="w-[120px] text-white">Tipo</th>
-            <th class="text-white">Producto</th>
-            <th class="text-right w-[100px] text-white">Cant</th>
-            <th class="text-right w-[100px] text-white">Anterior</th>
-            <th class="text-right w-[100px] text-white">Nuevo</th>
-            <th class="w-[200px] text-white">Motivo</th>
+            <th class="w-[160px] py-3.5 text-white">Fecha y Hora</th>
+            <th class="w-[130px] py-3.5 text-white">Tipo Movimiento</th>
+            <th class="py-3.5 text-white">Producto</th>
+            <th class="text-right w-[100px] py-3.5 text-white">Cantidad</th>
+            <th class="text-right w-[100px] py-3.5 text-white">Stock Anterior</th>
+            <th class="text-right w-[100px] py-3.5 text-white">Stock Nuevo</th>
+            <th class="w-[220px] py-3.5 text-white">Motivo / Referencia</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let m of movements()">
-            <td class="text-[#4A7FA7] font-mono text-[11px] uppercase tracking-wider">{{ m.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
-            <td>
-              <span class="px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase border rounded-md" [ngClass]="typeLabels[m.type].class">
+          <tr *ngFor="let m of movements()" class="hover:bg-slate-50/80 transition-colors">
+            <td class="text-slate-500 font-mono text-xs uppercase tracking-wider py-3.5">{{ m.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+            <td class="py-3.5">
+              <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase rounded-full border" [ngClass]="typeLabels[m.type].class">
                 {{ typeLabels[m.type].label || m.type }}
               </span>
             </td>
-            <td class="font-semibold text-[#0A1931]">{{ m.product?.name ?? m.productId }}</td>
-            <td class="text-right font-mono font-bold" [ngClass]="{'text-emerald-700': m.quantity > 0, 'text-rose-600': m.quantity < 0}">{{ m.quantity }}</td>
-            <td class="text-right font-mono text-[#4A7FA7]">{{ m.previousStock }}</td>
-            <td class="text-right font-mono font-bold text-[#0A1931]">{{ m.newStock }}</td>
-            <td class="text-[#4A7FA7] truncate max-w-[200px]" title="{{ m.reason }}">{{ m.reason ?? '—' }}</td>
+            <td class="font-bold text-[#0A1931] text-sm py-3.5">{{ m.product?.name ?? m.productId }}</td>
+            <td class="text-right font-mono font-extrabold text-sm py-3.5" [ngClass]="{'text-emerald-700': m.quantity > 0, 'text-rose-600': m.quantity < 0}">
+              {{ m.quantity > 0 ? '+' : '' }}{{ m.quantity }}
+            </td>
+            <td class="text-right font-mono text-xs text-slate-500 py-3.5">{{ m.previousStock }}</td>
+            <td class="text-right font-mono font-bold text-sm text-[#0A1931] py-3.5">{{ m.newStock }}</td>
+            <td class="text-slate-600 text-xs font-medium truncate max-w-[220px] py-3.5" title="{{ m.reason }}">{{ m.reason ?? '—' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
 

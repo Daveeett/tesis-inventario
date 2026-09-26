@@ -1,75 +1,100 @@
 <div class="drawer lg:drawer-open min-h-screen bg-[#F6FAFD]">
   <input id="main-drawer" type="checkbox" class="drawer-toggle" />
 
-  <!-- Page Content -->
+  <!-- Main Area (Header + Body) -->
   <div class="drawer-content flex flex-col min-h-screen bg-[#F6FAFD]">
-    <!-- Mobile Topbar -->
-    <div class="navbar bg-[#0A1931] text-white shadow-md lg:hidden px-4">
-      <label for="main-drawer" class="btn btn-ghost drawer-button text-[#B3CFE5] hover:bg-[#1A3D63]">
-        <ng-icon name="heroSquares2x2" class="text-xl" />
-      </label>
-      <span class="font-bold text-white tracking-wider ml-2">INNOVATECNO</span>
-    </div>
+    
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-10 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-2xs">
+      
+      <!-- Left: Mobile Menu Toggle & Brand / Breadcrumb -->
+      <div class="flex items-center gap-4">
+        <label for="main-drawer" class="btn btn-ghost btn-sm drawer-button lg:hidden text-[#1A3D63] hover:bg-slate-100 p-1.5 rounded-lg">
+          <ng-icon name="heroSquares2x2" class="text-xl" />
+        </label>
+        
+        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400">
+          <span class="text-[#1A3D63] font-bold">INNOVATECNO</span>
+          <span>/</span>
+          <span class="text-slate-600">Panel de Control</span>
+        </div>
+      </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-4 sm:p-6 lg:p-8 bg-[#F6FAFD]">
+      <!-- Right: User Quick Profile & Badge -->
+      <div class="flex items-center gap-4">
+        <!-- Live System Status Badge -->
+        <div class="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full text-xs font-semibold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Sistema En Línea
+        </div>
+
+        <!-- User Dropdown / Profile -->
+        <div class="flex items-center gap-3 pl-3 border-l border-slate-200" *ngIf="user()">
+          <div class="w-8 h-8 rounded-full bg-[#1A3D63] text-white font-bold text-xs flex items-center justify-center shadow-sm">
+            {{ user()!.name.slice(0,1).toUpperCase() }}
+          </div>
+          <div class="hidden sm:block text-left leading-tight">
+            <p class="text-xs font-bold text-[#0A1931] tracking-tight">{{ user()!.name }}</p>
+            <p class="text-[10px] text-[#4A7FA7] capitalize font-medium">{{ user()!.role }}</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <main class="flex-1 bg-[#F6FAFD]">
       <router-outlet />
     </main>
   </div>
 
-  <!-- Sidebar -->
+  <!-- Sidebar Navigation -->
   <div class="drawer-side z-20">
     <label for="main-drawer" class="drawer-overlay"></label>
     <aside class="bg-[#0A1931] border-r border-[#1A3D63] w-64 min-h-full flex flex-col text-white shadow-xl">
 
-      <!-- Brand -->
-      <div class="flex items-center gap-3 px-5 py-6 border-b border-[#1A3D63]">
-        <div class="w-10 h-10 rounded-lg bg-[#1A3D63] border border-[#4A7FA7]/40 flex items-center justify-center shadow-inner">
+      <!-- Brand Section -->
+      <div class="flex items-center gap-3.5 px-6 py-6 border-b border-[#1A3D63]/80">
+        <div class="w-10 h-10 rounded-xl bg-[#1A3D63] border border-[#4A7FA7]/40 flex items-center justify-center shadow-inner shrink-0">
           <ng-icon name="heroBuildingStorefront" class="text-[#B3CFE5] text-2xl" />
         </div>
         <div>
-          <p class="font-bold text-base tracking-wide text-white leading-tight">INNOVATECNO</p>
-          <p class="text-xs text-[#B3CFE5]/80 font-medium">Sistema de Inventario</p>
+          <p class="font-bold text-base tracking-wider text-white leading-tight">INNOVATECNO</p>
+          <p class="text-[11px] text-[#B3CFE5]/80 font-medium">Control de Inventarios</p>
         </div>
       </div>
 
-      <!-- Nav Links -->
-      <nav class="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
+      <!-- Navigation Links -->
+      <nav class="flex-1 px-3.5 py-6 space-y-1.5 overflow-y-auto">
+        <div class="px-3 pb-2 text-[10px] font-semibold text-[#B3CFE5]/60 uppercase tracking-widest">
+          Menú Principal
+        </div>
+        
         <a
           *ngFor="let link of navLinks"
           [routerLink]="link.path"
-          routerLinkActive="bg-[#1A3D63] text-white font-semibold shadow-sm border-l-4 border-[#4A7FA7]"
-          class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium
-                 text-[#B3CFE5] hover:bg-[#1A3D63]/60 hover:text-white transition-all duration-150"
+          routerLinkActive="bg-[#1A3D63] text-white font-bold shadow-sm"
+          [routerLinkActiveOptions]="{exact: link.path === '/dashboard'}"
+          class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold
+                 text-[#B3CFE5] hover:bg-[#1A3D63]/60 hover:text-white transition-all duration-150 group"
         >
-          <ng-icon [name]="link.icon" class="text-lg flex-shrink-0" />
-          {{ link.label }}
+          <ng-icon [name]="link.icon" class="text-lg shrink-0 text-[#B3CFE5] group-hover:text-white group-[.bg-\[\#1A3D63\]]:text-white" />
+          <span>{{ link.label }}</span>
         </a>
       </nav>
 
-      <!-- User Badge -->
-      <div class="p-4 border-t border-[#1A3D63] bg-[#0A1931]/80" *ngIf="user()">
-        <div class="flex items-center gap-3 mb-3 bg-[#1A3D63]/50 p-2.5 rounded-lg border border-[#4A7FA7]/20">
-          <div class="avatar placeholder">
-            <div class="bg-[#4A7FA7] text-white rounded-full w-9 shadow-sm flex items-center justify-center">
-              <span class="text-sm font-bold">{{ user()!.name.slice(0,1).toUpperCase() }}</span>
-            </div>
-          </div>
-          <div class="overflow-hidden">
-            <p class="font-semibold text-sm truncate text-white leading-tight">{{ user()!.name }}</p>
-            <p class="text-xs text-[#B3CFE5]/70 truncate capitalize">{{ user()!.role }}</p>
-          </div>
-        </div>
+      <!-- Logout & User Profile Section -->
+      <div class="p-4 border-t border-[#1A3D63] bg-[#0A1931]/90" *ngIf="user()">
         <button
           (click)="logout()"
-          class="btn btn-sm bg-[#1A3D63]/40 border-[#4A7FA7]/40 text-[#B3CFE5] hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-500/50 w-full gap-2 transition-all duration-150"
+          class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#1A3D63]/50 hover:bg-rose-950/60 hover:text-rose-200 text-[#B3CFE5] text-xs font-semibold border border-[#4A7FA7]/20 hover:border-rose-600/40 transition-all duration-150"
         >
           <ng-icon name="heroArrowRightOnRectangle" class="text-base" />
-          Cerrar sesión
+          <span>Cerrar sesión</span>
         </button>
       </div>
 
     </aside>
   </div>
 </div>
+
 
