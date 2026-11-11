@@ -12,7 +12,15 @@ interface QuickItem {
   quantity: number;
   productName: string;
   currentStock: number;
+  /** Texto escrito en el buscador de la fila */
+  term: string;
 }
+
+/** Pasa a minúsculas y quita tildes para comparar sin distinguirlas */
+const normalize = (s: string | null | undefined) =>
+  (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+const emptyItem = (): QuickItem => ({ productId: '', quantity: 1, productName: '', currentStock: 0, term: '' });
 
 @Component({
   selector: 'app-quick-register-page',
@@ -27,7 +35,7 @@ export class QuickRegisterPage implements OnInit {
   readonly success  = signal('');
   readonly error    = signal('');
 
-  items: QuickItem[] = [{ productId: '', quantity: 1, productName: '', currentStock: 0 }];
+  items: QuickItem[] = [emptyItem()];
   reason = 'Entrada de mercadería';
 
   constructor(
@@ -51,8 +59,33 @@ export class QuickRegisterPage implements OnInit {
     }
   }
 
+  /**
+   * Productos que coinciden con el buscador de la fila (nombre, marca, modelo o serie),
+   * sin distinguir mayúsculas ni tildes. El producto ya elegido se mantiene en la lista.
+   */
+  filteredProducts(item: QuickItem): Product[] {
+    const words = normalize(item.term).split(/\s+/).filter(Boolean);
+    if (words.length === 0) return this.products();
+    return this.products().filter((p) => {
+      if (p.id === item.productId) return true;
+      const text = normalize(`${p.name} ${p.brand} ${p.model ?? ''} ${p.serialNumber ?? ''}`);
+      return words.every((w) => text.includes(w));
+    });
+  }
+
+  /** Si la búsqueda deja un solo producto, se selecciona automáticamente */
+  onSearch(index: number) {
+    const item = this.items[index];
+    if (item.productId) return;
+    const matches = this.filteredProducts(item);
+    if (matches.length === 1) {
+      item.productId = matches[0].id;
+      this.onProductSelect(index);
+    }
+  }
+
   addRow() {
-    this.items.push({ productId: '', quantity: 1, productName: '', currentStock: 0 });
+    this.items.push(emptyItem());
   }
 
   removeRow(i: number) {
@@ -74,7 +107,7 @@ export class QuickRegisterPage implements OnInit {
       next: (res) => {
         this.saving.set(false);
         this.success.set(`✅ ${(res.data as any[]).length} producto(s) registrado(s) exitosamente.`);
-        this.items = [{ productId: '', quantity: 1, productName: '', currentStock: 0 }];
+        this.items = [emptyItem()];
         // Refresh product list to show updated stocks
         this.productSvc.getAll().subscribe((r) => this.products.set(r.data));
       },

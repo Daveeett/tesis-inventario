@@ -20,3 +20,8 @@ export const quickRegisterSchema = zod_1.z.object({
         .min(1, "Debe incluir al menos un producto"),
     reason: zod_1.z.string().max(500).default("Entrada de mercadería"),
 });
+export const quickExitSchema = quickRegisterSchema.extend({
+    reason: zod_1.z.string().max(500).optional(),
+    customerName: zod_1.z.string().max(200).optional(),
+    exitDate: zod_1.z.string().max(50).optional(),
+});

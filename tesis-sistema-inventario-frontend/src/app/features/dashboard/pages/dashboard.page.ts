@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
 import { ProductService } from '../../../core/services/product.service';
 import { InventoryService } from '../../../core/services/inventory.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { Product, InventoryMovement } from '../../../core/models/api.models';
 
 Chart.register(...registerables);
@@ -31,14 +32,15 @@ export class DashboardPage implements OnInit, OnDestroy {
   private movementChartInstance?: Chart;
 
   readonly typeLabels: Record<string, { label: string; class: string }> = {
-    IN: { label: 'Entrada', class: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-    OUT: { label: 'Salida', class: 'bg-rose-100 text-rose-800 border-rose-300' },
-    ADJUSTMENT: { label: 'Ajuste', class: 'bg-amber-100 text-amber-800 border-amber-300' },
+    IN: { label: 'Entrada', class: 'badge-pill-solid' },
+    OUT: { label: 'Salida', class: '' },
+    ADJUSTMENT: { label: 'Ajuste', class: 'badge-pill-muted' },
   };
 
   constructor(
     private readonly productSvc: ProductService,
-    private readonly inventorySvc: InventoryService
+    private readonly inventorySvc: InventoryService,
+    private readonly categorySvc: CategoryService
   ) {}
 
   ngOnInit() {
@@ -53,11 +55,13 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.loading.set(true);
     forkJoin({
       productsRes: this.productSvc.getAll(),
-      movementsRes: this.inventorySvc.getMovements()
+      movementsRes: this.inventorySvc.getMovements(),
+      categoriesRes: this.categorySvc.getCategories()
     }).subscribe({
-      next: ({ productsRes, movementsRes }) => {
+      next: ({ productsRes, movementsRes, categoriesRes }) => {
         const products = productsRes.data || [];
         const movements = movementsRes.data || [];
+        const categories = categoriesRes.data || [];
 
         // 1. KPIs
         this.totalProducts.set(products.length);
@@ -68,13 +72,17 @@ export class DashboardPage implements OnInit, OnDestroy {
 
         this.recentMovements.set(movements.slice(0, 5));
 
-        // Categories set
+        // Set total categories directly from CategoryService count
+        this.totalCategories.set(categories.length);
+
+        // Categories set for Doughnut chart
         const catMap = new Map<string, number>();
+        categories.forEach((c) => catMap.set(c.name, 0));
+
         products.forEach((p) => {
           const catName = p.subcategory?.category?.name || 'General';
           catMap.set(catName, (catMap.get(catName) || 0) + 1);
         });
-        this.totalCategories.set(catMap.size);
 
         this.loading.set(false);
 
@@ -107,9 +115,10 @@ export class DashboardPage implements OnInit, OnDestroy {
     const labels = Array.from(catMap.keys());
     const data = Array.from(catMap.values());
 
+    // Achromatic UI: categories are separated by gray steps only
     const colors = [
-      '#1A3D63', '#4A7FA7', '#B3CFE5', '#0A1931',
-      '#059669', '#D97706', '#DC2626', '#8B5CF6'
+      '#000000', '#404040', '#616161', '#8c8c8c',
+      '#cacaca', '#e2e2e2', '#1a1b1e', '#f1f1f1'
     ];
 
     this.categoryChartInstance = new Chart(this.categoryCanvas.nativeElement, {
@@ -119,9 +128,9 @@ export class DashboardPage implements OnInit, OnDestroy {
         datasets: [{
           data,
           backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: '#ffffff',
-          hoverOffset: 6
+          hoverOffset: 4
         }]
       },
       options: {
@@ -131,8 +140,12 @@ export class DashboardPage implements OnInit, OnDestroy {
           legend: {
             position: 'bottom',
             labels: {
-              boxWidth: 12,
-              font: { family: 'sans-serif', size: 12 }
+              boxWidth: 8,
+              boxHeight: 8,
+              usePointStyle: true,
+              pointStyle: 'circle',
+              color: '#000000',
+              font: { family: 'Inter', size: 11 }
             }
           },
           tooltip: {
@@ -189,14 +202,14 @@ export class DashboardPage implements OnInit, OnDestroy {
           {
             label: 'Entradas (+)',
             data: dataIn,
-            backgroundColor: '#059669',
-            borderRadius: 4
+            backgroundColor: '#000000',
+            borderRadius: 0
           },
           {
             label: 'Salidas (-)',
             data: dataOut,
-            backgroundColor: '#E11D48',
-            borderRadius: 4
+            backgroundColor: '#cacaca',
+            borderRadius: 0
           }
         ]
       },
@@ -204,14 +217,28 @@ export class DashboardPage implements OnInit, OnDestroy {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, ticks: { precision: 0 } }
+          x: {
+            grid: { display: false },
+            border: { color: '#000000' },
+            ticks: { color: '#616161', font: { family: 'Inter', size: 10 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f1f1' },
+            border: { display: false },
+            ticks: { precision: 0, color: '#616161', font: { family: 'Inter', size: 10 } }
+          }
         },
         plugins: {
           legend: {
             position: 'top',
             align: 'end',
-            labels: { boxWidth: 12 }
+            labels: {
+              boxWidth: 8,
+              boxHeight: 8,
+              color: '#000000',
+              font: { family: 'Inter', size: 11 }
+            }
           }
         }
       }

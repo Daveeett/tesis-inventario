@@ -15,12 +15,12 @@ export class LayoutShellComponent {
   readonly user = this.auth.getCurrentUser();
 
   readonly navLinks = [
-    { path: '/dashboard',           label: 'Dashboard',            icon: 'heroHome' },
-    { path: '/catalog',             label: 'Catálogo',              icon: 'heroArchiveBox' },
-    { path: '/inventory',           label: 'Entrada Mercadería',   icon: 'heroQueueList' },
-    { path: '/inventory/out-register', label: 'Salida Inventario',  icon: 'heroShoppingCart' },
-    { path: '/inventory/history',   label: 'Historial Movimientos', icon: 'heroClock' },
-    { path: '/categories',          label: 'Categorías',            icon: 'heroTag' },
+    { path: '/dashboard',              label: 'Dashboard',             exact: true },
+    { path: '/catalog',                label: 'Catálogo',              exact: false },
+    { path: '/inventory',              label: 'Entrada mercadería',    exact: true },
+    { path: '/inventory/out-register', label: 'Salida inventario',     exact: true },
+    { path: '/inventory/history',      label: 'Historial movimientos', exact: true },
+    { path: '/categories',             label: 'Categorías',            exact: true },
   ];
 
   constructor(

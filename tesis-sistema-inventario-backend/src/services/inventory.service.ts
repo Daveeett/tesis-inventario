@@ -3,9 +3,30 @@ import { InventoryMovement } from "../entities/inventory-movement.entity";
 import { Product } from "../entities/product.entity";
 import { MovementType } from "../entities/enums/movement-type.enum";
 import { AppError } from "../middlewares/error.middleware";
+import { EntityManager } from "typeorm";
 
 const movementRepo = () => AppDataSource.getRepository(InventoryMovement);
 const productRepo = () => AppDataSource.getRepository(Product);
+
+async function saveMovement(manager: EntityManager, data: { productId: string; type: MovementType | string; quantity: number; reason?: string }) {
+  const products = manager.getRepository(Product);
+  const movements = manager.getRepository(InventoryMovement);
+  const product = await products.findOne({ where: { id: data.productId }, lock: { mode: "pessimistic_write" } });
+  if (!product) throw new AppError(404, "Producto no encontrado");
+  const previousStock = product.stock;
+  let newStock: number;
+  switch (data.type) {
+    case MovementType.IN: newStock = previousStock + data.quantity; break;
+    case MovementType.OUT:
+      if (previousStock < data.quantity) throw new AppError(400, `Stock insuficiente para "${product.name}". Stock actual: ${previousStock}, Solicitado: ${data.quantity}`);
+      newStock = previousStock - data.quantity; break;
+    case MovementType.ADJUSTMENT: newStock = data.quantity; break;
+    default: throw new AppError(400, "Tipo de movimiento inválido");
+  }
+  product.stock = newStock;
+  await products.save(product);
+  return movements.save(movements.create({ ...data, previousStock, newStock }));
+}
 
 export interface QuickExitData {
   items: Array<{ productId: string; quantity: number }>;
@@ -38,50 +59,15 @@ export const InventoryService = {
     quantity: number;
     reason?: string;
   }) {
-    const product = await productRepo().findOne({ where: { id: data.productId } });
-    if (!product) throw new AppError(404, "Producto no encontrado");
-
-    const previousStock = product.stock;
-    let newStock: number;
-
-    switch (data.type) {
-      case MovementType.IN:
-        newStock = previousStock + data.quantity;
-        break;
-      case MovementType.OUT:
-        if (previousStock < data.quantity) {
-          throw new AppError(
-            400,
-            `Stock insuficiente para "${product.name}". Stock actual: ${previousStock}, Solicitado: ${data.quantity}`
-          );
-        }
-        newStock = previousStock - data.quantity;
-        break;
-      case MovementType.ADJUSTMENT:
-        newStock = data.quantity;
-        break;
-      default:
-        throw new AppError(400, "Tipo de movimiento inválido");
-    }
-
-    // Actualizar stock del producto
-    product.stock = newStock;
-    await productRepo().save(product);
-
-    // Crear registro de movimiento
-    const movement = movementRepo().create({
-      ...data,
-      previousStock,
-      newStock,
-    });
-    return movementRepo().save(movement);
+    return AppDataSource.transaction(manager => saveMovement(manager, data));
   },
 
   /** Registro rápido de entrada de mercadería */
   async quickRegister(data: { items: Array<{ productId: string; quantity: number }>; reason?: string }) {
+    return AppDataSource.transaction(async manager => {
     const movements = [];
-    for (const item of data.items) {
-      const movement = await InventoryService.createMovement({
+    for (const item of [...data.items].sort((a, b) => a.productId.localeCompare(b.productId))) {
+      const movement = await saveMovement(manager, {
         productId: item.productId,
         type: MovementType.IN,
         quantity: item.quantity,
@@ -90,6 +76,7 @@ export const InventoryService = {
       movements.push(movement);
     }
     return movements;
+    });
   },
 
   /**
@@ -105,9 +92,10 @@ export const InventoryService = {
     const dateInfo = data.exitDate ? ` | Fecha Salida: ${data.exitDate}` : "";
     const fullReason = `${data.reason || "Salida de mercadería"}${customerInfo}${dateInfo}`;
 
+    return AppDataSource.transaction(async manager => {
     const movements = [];
-    for (const item of data.items) {
-      const movement = await InventoryService.createMovement({
+    for (const item of [...data.items].sort((a, b) => a.productId.localeCompare(b.productId))) {
+      const movement = await saveMovement(manager, {
         productId: item.productId,
         type: MovementType.OUT,
         quantity: item.quantity,
@@ -116,5 +104,6 @@ export const InventoryService = {
       movements.push(movement);
     }
     return movements;
+    });
   },
 };

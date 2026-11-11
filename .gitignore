@@ -33,3 +33,6 @@ yarn-error.log*
 # OS System Files
 .DS_Store
 Thumbs.db
+
+# graphify (code knowledge graph) — keep report/graph, ignore cache
+graphify-out/cache/

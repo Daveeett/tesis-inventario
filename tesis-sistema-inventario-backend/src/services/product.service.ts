@@ -3,6 +3,20 @@ import * as product_entity_1 from "../entities/product.entity";
 import * as error_middleware_1 from "../middlewares/error.middleware";
 const repo = () => data_source_1.AppDataSource.getRepository(product_entity_1.Product);
 /**
+ * Activa una sola vez la extensión `unaccent` de PostgreSQL para que la búsqueda
+ * ignore tildes. Si la base no permite crearla, la búsqueda sigue funcionando
+ * sin distinguir mayúsculas, aunque sí distinga tildes.
+ */
+let unaccentReady: Promise<boolean> | null = null;
+const ensureUnaccent = () => {
+    if (!unaccentReady) {
+        unaccentReady = data_source_1.AppDataSource.query("CREATE EXTENSION IF NOT EXISTS unaccent")
+            .then(() => true)
+            .catch(() => false);
+    }
+    return unaccentReady;
+};
+/**
  * Service layer for Product CRUD operations and optimized search.
  * Designed to reduce manual registration time from 10 hours weekly.
  */
@@ -18,8 +32,13 @@ export const ProductService = {
             .leftJoinAndSelect("product.subcategory", "subcategory")
             .leftJoinAndSelect("subcategory.category", "category");
         // Filtro de búsqueda general (nombre, marca, modelo, serial)
+        // Sin distinguir mayúsculas (ILIKE) y, si está disponible, sin distinguir tildes (unaccent)
         if (search) {
-            qb.andWhere("(product.name LIKE :search OR product.brand LIKE :search OR product.model LIKE :search OR product.serial_number LIKE :search)", { search: `%${search}%` });
+            const ignoreAccents = await ensureUnaccent();
+            const condition = ["product.name", "product.brand", "product.model", "product.serial_number"]
+                .map((col) => ignoreAccents ? `unaccent(${col}) ILIKE unaccent(:search)` : `${col} ILIKE :search`)
+                .join(" OR ");
+            qb.andWhere(`(${condition})`, { search: `%${search}%` });
         }
         // Filtro por marca
         if (brand) {

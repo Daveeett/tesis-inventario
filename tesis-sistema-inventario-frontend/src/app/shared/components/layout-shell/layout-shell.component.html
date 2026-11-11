@@ -1,100 +1,62 @@
-<div class="drawer lg:drawer-open min-h-screen bg-[#F6FAFD]">
-  <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+<div class="min-h-screen flex flex-col bg-paper">
 
-  <!-- Main Area (Header + Body) -->
-  <div class="drawer-content flex flex-col min-h-screen bg-[#F6FAFD]">
-    
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-10 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between shadow-2xs">
-      
-      <!-- Left: Mobile Menu Toggle & Brand / Breadcrumb -->
-      <div class="flex items-center gap-4">
-        <label for="main-drawer" class="btn btn-ghost btn-sm drawer-button lg:hidden text-[#1A3D63] hover:bg-slate-100 p-1.5 rounded-lg">
-          <ng-icon name="heroSquares2x2" class="text-xl" />
-        </label>
-        
-        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400">
-          <span class="text-[#1A3D63] font-bold">INNOVATECNO</span>
-          <span>/</span>
-          <span class="text-slate-600">Panel de Control</span>
-        </div>
+  <!-- Top Navigation Bar (sticky) -->
+  <header class="sticky top-0 z-30 bg-paper border-b border-concrete">
+
+    <!-- Row 1: eyebrow · logo plate · user -->
+    <div class="relative max-w-page mx-auto h-16 px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-4">
+      <div class="hidden md:flex items-center gap-3 text-label uppercase">
+        <span class="text-carbon">Innovatecno</span>
+        <span class="text-concrete">/</span>
+        <span class="text-ash">Control de inventarios</span>
       </div>
 
-      <!-- Right: User Quick Profile & Badge -->
-      <div class="flex items-center gap-4">
-        <!-- Live System Status Badge -->
-        <div class="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full text-xs font-semibold text-emerald-700">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Sistema En Línea
-        </div>
+      <!-- Logo plate -->
+      <a routerLink="/dashboard"
+         class="md:absolute md:left-1/2 md:-translate-x-1/2 inline-flex items-center bg-carbon text-paper rounded-nav px-4 py-2 text-[13px] uppercase tracking-[0.12em] leading-none">
+        Innovatecno
+      </a>
 
-        <!-- User Dropdown / Profile -->
-        <div class="flex items-center gap-3 pl-3 border-l border-slate-200" *ngIf="user()">
-          <div class="w-8 h-8 rounded-full bg-[#1A3D63] text-white font-bold text-xs flex items-center justify-center shadow-sm">
-            {{ user()!.name.slice(0,1).toUpperCase() }}
-          </div>
-          <div class="hidden sm:block text-left leading-tight">
-            <p class="text-xs font-bold text-[#0A1931] tracking-tight">{{ user()!.name }}</p>
-            <p class="text-[10px] text-[#4A7FA7] capitalize font-medium">{{ user()!.role }}</p>
-          </div>
+      <!-- User + logout -->
+      <div class="flex items-center gap-2" *ngIf="user()">
+        <div class="hidden sm:inline-flex items-center gap-2 border border-concrete rounded-nav px-3 py-1.5 text-label uppercase">
+          <span class="text-ash">{{ user()!.role }}</span>
+          <span class="text-carbon">{{ user()!.name }}</span>
         </div>
+        <button type="button" (click)="logout()" class="btn-pill-ghost btn-pill-sm" title="Cerrar sesión">
+          <ng-icon name="heroArrowRightOnRectangle" class="text-sm" />
+          <span class="hidden sm:inline">Salir</span>
+        </button>
       </div>
-    </header>
+    </div>
 
-    <!-- Page Content Container -->
-    <main class="flex-1 bg-[#F6FAFD]">
-      <router-outlet />
-    </main>
-  </div>
-
-  <!-- Sidebar Navigation -->
-  <div class="drawer-side z-20">
-    <label for="main-drawer" class="drawer-overlay"></label>
-    <aside class="bg-[#0A1931] border-r border-[#1A3D63] w-64 min-h-full flex flex-col text-white shadow-xl">
-
-      <!-- Brand Section -->
-      <div class="flex items-center gap-3.5 px-6 py-6 border-b border-[#1A3D63]/80">
-        <div class="w-10 h-10 rounded-xl bg-[#1A3D63] border border-[#4A7FA7]/40 flex items-center justify-center shadow-inner shrink-0">
-          <ng-icon name="heroBuildingStorefront" class="text-[#B3CFE5] text-2xl" />
-        </div>
-        <div>
-          <p class="font-bold text-base tracking-wider text-white leading-tight">INNOVATECNO</p>
-          <p class="text-[11px] text-[#B3CFE5]/80 font-medium">Control de Inventarios</p>
-        </div>
-      </div>
-
-      <!-- Navigation Links -->
-      <nav class="flex-1 px-3.5 py-6 space-y-1.5 overflow-y-auto">
-        <div class="px-3 pb-2 text-[10px] font-semibold text-[#B3CFE5]/60 uppercase tracking-widest">
-          Menú Principal
-        </div>
-        
+    <!-- Row 2: section links -->
+    <nav class="border-t border-concrete">
+      <div class="max-w-page mx-auto px-4 sm:px-8 lg:px-12 flex items-center gap-1 overflow-x-auto py-2">
         <a
           *ngFor="let link of navLinks"
           [routerLink]="link.path"
-          routerLinkActive="bg-[#1A3D63] text-white font-bold shadow-sm"
-          [routerLinkActiveOptions]="{exact: link.path === '/dashboard'}"
-          class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold
-                 text-[#B3CFE5] hover:bg-[#1A3D63]/60 hover:text-white transition-all duration-150 group"
+          routerLinkActive="!bg-carbon !text-paper !border-carbon"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          class="shrink-0 inline-flex items-center rounded-full border border-transparent px-3.5 py-1.5
+                 text-label uppercase text-carbon hover:border-carbon transition-colors duration-150"
         >
-          <ng-icon [name]="link.icon" class="text-lg shrink-0 text-[#B3CFE5] group-hover:text-white group-[.bg-\[\#1A3D63\]]:text-white" />
-          <span>{{ link.label }}</span>
+          {{ link.label }}
         </a>
-      </nav>
-
-      <!-- Logout & User Profile Section -->
-      <div class="p-4 border-t border-[#1A3D63] bg-[#0A1931]/90" *ngIf="user()">
-        <button
-          (click)="logout()"
-          class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#1A3D63]/50 hover:bg-rose-950/60 hover:text-rose-200 text-[#B3CFE5] text-xs font-semibold border border-[#4A7FA7]/20 hover:border-rose-600/40 transition-all duration-150"
-        >
-          <ng-icon name="heroArrowRightOnRectangle" class="text-base" />
-          <span>Cerrar sesión</span>
-        </button>
       </div>
+    </nav>
+  </header>
 
-    </aside>
-  </div>
+  <!-- Page Content -->
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-concrete">
+    <div class="max-w-page mx-auto px-4 sm:px-8 lg:px-12 py-6 flex flex-col sm:flex-row justify-between gap-2 text-label uppercase text-ash">
+      <span>Innovatecno — Sistema de inventario</span>
+      <span>Catálogo · Entradas · Salidas · Trazabilidad</span>
+    </div>
+  </footer>
 </div>
-
-

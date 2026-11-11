@@ -7,7 +7,8 @@
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "seed:prod": "ts-node src/scripts/seed-products.ts",
-    "build:local": "tsc"
+    "build:local": "tsc",
+    "seed:1000": "node src/scripts/crear-base-1000.js"
   },
   "keywords": [],
   "author": "",

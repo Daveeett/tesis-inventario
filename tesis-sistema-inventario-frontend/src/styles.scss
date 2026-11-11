@@ -3,136 +3,247 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Global Palette CSS Variables & Custom System Tokens ── */
+/* ── Design tokens (DESIGN-REFERO.md — monochrome industrial catalog) ── */
 :root {
-  --color-navy-dark: #0A1931;
-  --color-navy-ocean: #1A3D63;
-  --color-blue-slate: #4A7FA7;
-  --color-blue-ice: #B3CFE5;
-  --color-blue-soft: #F6FAFD;
+  --color-carbon-black: #000000;
+  --color-paper-white: #ffffff;
+  --color-concrete-gray: #cacaca;
+  --color-mist-gray: #f1f1f1;
+  --color-iron-gray: #404040;
+  --color-ash-gray: #616161;
+  --color-ink: #1a1b1e;
+  --color-caution-yellow: #ffdd00;
 
-  --rounded-box: 0.75rem;
-  --rounded-btn: 0.5rem;
-  --rounded-badge: 0.375rem;
-  --tab-radius: 0.5rem;
-  
-  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --shadow-md: rgba(0, 0, 0, 0.12) 2px 2px 10px 0px;
 }
 
-/* ── Base Overrides ── */
-* {
-  box-sizing: border-box;
+/* ── Base ── */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.5;
+    background-color: var(--color-paper-white);
+    color: var(--color-carbon-black);
+    font-feature-settings: "tnum" on, "ss01" on;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* The system is weight 400 only — emphasis comes from size, case and tracking */
+  h1, h2, h3, h4, h5, h6, b, strong, th, label {
+    font-weight: 400;
+  }
+
+  ::selection {
+    background: var(--color-carbon-black);
+    color: var(--color-paper-white);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-paper-white);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-concrete-gray);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ash-gray);
+  }
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  font-family: var(--font-sans);
-  background-color: var(--color-blue-soft);
-  color: var(--color-navy-dark);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  /* ── Layout ── */
+  .page-container {
+    @apply w-full max-w-page mx-auto px-4 sm:px-8 lg:px-12 py-10 lg:py-16;
+  }
+
+  .page-header {
+    @apply flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pb-8 mb-10 border-b border-carbon;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    @apply block text-label uppercase text-ash;
+  }
+
+  .h-display {
+    @apply text-[32px] sm:text-display uppercase m-0;
+    line-height: 0.97;
+  }
+
+  .h-heading {
+    @apply text-[24px] sm:text-heading uppercase m-0;
+  }
+
+  .h-sub {
+    @apply text-subheading uppercase m-0;
+  }
+
+  .lede {
+    @apply text-[14px] sm:text-body text-iron max-w-2xl mt-4 mb-0;
+  }
+
+  .label {
+    @apply text-label-sm uppercase;
+  }
+
+  .tnum {
+    font-feature-settings: "tnum" on;
+  }
+
+  /* ── Buttons — pills only, never rectangular ── */
+  .btn-pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-carbon text-paper border border-carbon
+           px-[22px] py-3 text-label-sm uppercase shadow-pill whitespace-nowrap cursor-pointer
+           transition-colors duration-150 hover:bg-ink
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+
+  .btn-pill-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-paper text-carbon border border-carbon
+           px-[22px] py-3 text-label-sm uppercase whitespace-nowrap cursor-pointer
+           transition-colors duration-150 hover:bg-carbon hover:text-paper
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-paper disabled:hover:text-carbon;
+  }
+
+  .btn-pill-sm {
+    @apply px-4 py-2 text-label;
+  }
+
+  .btn-round {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-full border border-transparent text-carbon
+           cursor-pointer transition-colors duration-150 hover:border-carbon
+           disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-transparent;
+  }
+
+  .link-underline {
+    @apply text-label uppercase text-carbon underline underline-offset-4 decoration-1 hover:no-underline;
+  }
+
+  /* ── Form fields ── */
+  .field-label {
+    @apply block text-label uppercase text-ash mb-2;
+  }
+
+  .field {
+    @apply block w-full bg-paper border border-concrete rounded-[4px] px-3.5 py-2.5 text-[14px] text-carbon
+           placeholder:text-ash/70 shadow-none outline-none transition-colors duration-150
+           focus:border-carbon focus:ring-0 focus:outline-none
+           disabled:bg-mist disabled:text-ash;
+  }
+
+  .field-invalid {
+    @apply border-carbon border-dashed;
+  }
+
+  .field-hint {
+    @apply text-label uppercase text-carbon mt-2 flex items-center gap-1.5;
+  }
+
+  /* ── Surfaces — the ruled grid is the container ── */
+  .panel {
+    @apply bg-paper border border-concrete;
+  }
+
+  .panel-head {
+    @apply flex items-center justify-between gap-4 px-5 py-4 border-b border-concrete;
+  }
+
+  .panel-title {
+    @apply text-label-sm uppercase text-carbon m-0;
+  }
+
+  .panel-body {
+    @apply p-5 sm:p-6;
+  }
+
+  .ruled {
+    @apply grid gap-px bg-concrete border border-concrete;
+  }
+
+  .ruled > * {
+    @apply bg-paper;
+  }
+
+  /* ── Badges ── */
+  .badge-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-carbon bg-paper text-carbon
+           px-2.5 py-[3px] text-label-xs uppercase whitespace-nowrap;
+  }
+
+  .badge-pill-solid {
+    @apply bg-carbon text-paper;
+  }
+
+  .badge-pill-muted {
+    @apply border-concrete text-ash;
+  }
+
+  .dot-caution {
+    @apply inline-block w-1.5 h-1.5 rounded-full bg-caution ring-1 ring-carbon/20 shrink-0;
+  }
+
+  /* ── Notices ── */
+  .notice {
+    @apply flex items-start gap-3 border border-carbon bg-paper px-4 py-3.5 text-[14px] text-carbon;
+  }
+
+  .notice-muted {
+    @apply border-concrete bg-mist;
+  }
+
+  /* ── Manifest table ── */
+  .manifest {
+    @apply w-full border-collapse text-[14px];
+  }
+
+  .manifest th {
+    @apply bg-paper text-left text-label uppercase text-ash py-3 px-4 border-b border-carbon whitespace-nowrap;
+  }
+
+  .manifest td {
+    @apply py-3.5 px-4 border-b border-concrete text-carbon align-middle;
+  }
+
+  .manifest tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .manifest tbody tr {
+    @apply transition-colors duration-100 hover:bg-mist;
+  }
+
+  .manifest-sm td {
+    @apply py-2.5;
+  }
+
+  /* ── Loading ── */
+  .loader {
+    @apply inline-block w-4 h-4 rounded-full border border-current border-r-transparent animate-spin;
+  }
+
+  .loader-lg {
+    @apply w-6 h-6;
+  }
+
+  .empty-state {
+    @apply px-6 py-16 text-left;
+  }
 }
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-blue-soft);
-}
-
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-blue-slate);
-}
-
-/* ── Layout Utilities ── */
-.page-container {
-  @apply p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto;
-}
-
-.page-header {
-  @apply mb-6 pb-4 border-b border-[#B3CFE5]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4;
-}
-
-.page-header h1 {
-  @apply text-2xl sm:text-3xl font-bold tracking-tight text-[#0A1931] m-0;
-}
-
-.page-header p {
-  @apply text-[#4A7FA7] text-sm mt-1 mb-0 font-medium;
-}
-
-/* ── Card Elevation ── */
-.card-flat {
-  @apply bg-white border border-slate-200/80 rounded-xl shadow-sm transition-all duration-200;
-}
-
-.card-flat-hover {
-  @apply bg-white border border-slate-200/80 rounded-xl shadow-sm hover:shadow-md hover:border-[#4A7FA7]/40 transition-all duration-200;
-}
-
-.card-navy {
-  @apply bg-[#0A1931] text-white border border-[#1A3D63] shadow-md rounded-xl;
-}
-
-/* ── Table Customization ── */
-.table {
-  @apply text-sm w-full border-collapse;
-}
-
-.table th {
-  @apply bg-[#1A3D63] text-white font-semibold tracking-wider uppercase text-xs border-b border-[#0A1931] py-3.5 px-4 text-left;
-}
-
-.table td {
-  @apply border-b border-slate-100 py-3.5 px-4 text-[#0A1931] align-middle;
-}
-
-.table-zebra tbody tr:nth-child(even) {
-  @apply bg-[#F6FAFD]/60;
-}
-
-.table-zebra tbody tr:hover {
-  @apply bg-[#B3CFE5]/15 transition-colors;
-}
-
-/* ── Form Control Overrides ── */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-select,
-textarea {
-  @apply transition-all duration-150 rounded-lg border-slate-300 focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 outline-none;
-}
-
-/* ── Stock Badges ── */
-.badge-stock-ok {
-  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80;
-}
-
-.badge-stock-low {
-  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80;
-}
-
-.badge-stock-empty {
-  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/80;
-}
-
-/* Font Mono Utility */
-.font-mono {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-

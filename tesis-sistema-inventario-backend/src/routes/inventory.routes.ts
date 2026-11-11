@@ -2,8 +2,11 @@ import { Router } from "express";
 import { InventoryController } from "../controllers/inventory.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { createMovementSchema, quickRegisterSchema } from "../dtos/inventory.dto";
+import { quickExitSchema } from "../dtos/inventory.dto";
+import { requireAuth } from "../middlewares/auth.middleware";
 
 export const inventoryRoutes = Router();
+inventoryRoutes.use(requireAuth);
 
 /**
  * @openapi
@@ -46,4 +49,4 @@ inventoryRoutes.post("/quick-register", validate(quickRegisterSchema), Inventory
  *     summary: Registro de salida de mercadería y débito de inventario
  *     tags: [Inventory]
  */
-inventoryRoutes.post("/quick-exit", InventoryController.quickExit);
+inventoryRoutes.post("/quick-exit", validate(quickExitSchema), InventoryController.quickExit);

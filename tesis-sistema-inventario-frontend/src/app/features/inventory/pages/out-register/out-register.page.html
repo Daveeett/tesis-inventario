@@ -1,249 +1,175 @@
-<div class="page-container max-w-6xl mx-auto">
+<div class="page-container">
 
   <!-- Header -->
-  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight flex items-center gap-2.5">
-        <ng-icon name="heroArrowUpRight" class="text-rose-600" />
-        <span>Registro de Salida de Inventario</span>
-      </h1>
-      <p class="text-sm text-[#4A7FA7] font-medium mt-1">Selecciona productos para debitar existencias del catálogo en tiempo real.</p>
+      <span class="eyebrow mb-4">Inventario · Salida</span>
+      <h1 class="h-display">Registro de salida de inventario</h1>
+      <p class="lede">Seleccione productos para debitar existencias del catálogo en tiempo real.</p>
     </div>
-    <div class="flex gap-2">
-      <a routerLink="/inventory/history" class="btn btn-sm border-slate-300 bg-white text-[#0A1931] hover:bg-slate-100 rounded-xl font-semibold gap-2 transition-all">
-        <ng-icon name="heroClock" class="text-base" />
-        <span>Historial Movimientos</span>
-      </a>
+    <a routerLink="/inventory/history" class="btn-pill-ghost">
+      <ng-icon name="heroClock" class="text-sm" />
+      Historial movimientos
+    </a>
+  </div>
+
+  <!-- Notices -->
+  <div *ngIf="success()" class="notice notice-muted mb-6">
+    <ng-icon name="heroCheck" class="text-base shrink-0 mt-0.5" />
+    <span>{{ success() }}</span>
+  </div>
+  <div *ngIf="error()" class="notice mb-6">
+    <ng-icon name="heroExclamationTriangle" class="text-base shrink-0 mt-0.5" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- Voucher details -->
+  <div class="panel mb-10">
+    <div class="panel-head">
+      <h2 class="panel-title">Datos del comprobante de salida</h2>
+      <span class="text-label uppercase text-ash">01</span>
     </div>
-  </div>
-
-  <!-- Notifications -->
-  <div *ngIf="success()" class="p-4 mb-5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex gap-3 items-center rounded-xl">
-    <ng-icon name="heroCheckCircle" class="text-xl text-emerald-600 shrink-0" />
-    <span class="font-medium">{{ success() }}</span>
-  </div>
-
-  <div *ngIf="error()" class="p-4 mb-5 bg-rose-50 border border-rose-200 text-rose-700 text-sm flex gap-3 items-center rounded-xl">
-    <ng-icon name="heroExclamationTriangle" class="text-xl text-rose-600 shrink-0" />
-    <span class="font-medium">{{ error() }}</span>
-  </div>
-
-  <!-- Header Form (Movement Details) -->
-  <div class="bg-white border border-slate-200/90 shadow-xs p-6 mb-6 rounded-2xl overflow-hidden">
-    <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-4 flex items-center gap-2">
-      <ng-icon name="heroDocumentText" class="text-[#4A7FA7]" />
-      <span>Datos del Comprobante de Salida</span>
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-
+    <div class="panel-body grid grid-cols-1 md:grid-cols-3 gap-5">
       <div>
-        <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Fecha de Salida *</label>
-        <input type="date" [(ngModel)]="exitDate"
-          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm font-medium text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
+        <label class="field-label">Fecha de salida *</label>
+        <input type="date" [(ngModel)]="exitDate" class="field tnum" />
+      </div>
+      <div>
+        <label class="field-label">Motivo de salida *</label>
+        <select [(ngModel)]="reason" class="field">
+          <option value="Venta">Venta a cliente</option>
+          <option value="Producto Dañado">Producto dañado / averiado</option>
+          <option value="Consumo Interno">Consumo interno / muestra</option>
+          <option value="Ajuste de Inventario">Ajuste de inventario / pérdida</option>
+          <option value="Otro">Otro motivo</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Cliente / Solicitante (opcional)</label>
+        <input type="text" [(ngModel)]="customerName" placeholder="Ej. Juan Pérez / Depto. técnico" class="field" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Selector + cart -->
+  <div class="ruled grid-cols-1 lg:grid-cols-12">
+
+    <!-- Product selector -->
+    <div class="lg:col-span-5 flex flex-col">
+      <div class="panel-head">
+        <h3 class="panel-title">Seleccionar producto</h3>
+        <span class="text-label uppercase text-ash tnum">{{ products().length }} disponibles</span>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Motivo de Salida *</label>
-        <select [(ngModel)]="reason"
-          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm bg-white font-medium text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20">
-          <option value="Venta">Venta a Cliente</option>
-          <option value="Producto Dañado">Producto Dañado / Averiado</option>
-          <option value="Consumo Interno">Consumo Interno / Muestra</option>
-          <option value="Ajuste de Inventario">Ajuste de Inventario / Pérdida</option>
-          <option value="Otro">Otro Motivo</option>
+      <div class="p-5 space-y-3 border-b border-concrete">
+        <div class="relative">
+          <ng-icon name="heroMagnifyingGlass" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash text-base" />
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por nombre, marca o código…" class="field pl-10" />
+        </div>
+        <select [(ngModel)]="selectedProductId" (change)="onSelectProduct()" class="field">
+          <option value="">— Selección rápida de lista —</option>
+          <option *ngFor="let p of filteredProducts()" [value]="p.id" [disabled]="p.stock <= 0">
+            {{ p.name }} (Stock: {{ p.stock }}) - $ {{ p.salePrice | number:'1.2-2' }}
+          </option>
         </select>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Cliente / Solicitante (Opcional)</label>
-        <input type="text" [(ngModel)]="customerName" placeholder="Ej. Juan Pérez / Depto. Técnico"
-          class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Main Grid: Product Selection + Cart -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-    <!-- Left Column: Product Selector (5 cols) -->
-    <div class="lg:col-span-5 flex flex-col space-y-4">
-
-      <div class="bg-white border border-slate-200/90 shadow-xs p-6 rounded-2xl">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-bold text-[#0A1931]">Seleccionar Producto</h3>
-          <span class="text-xs text-[#4A7FA7] font-semibold">{{ products().length }} disponibles</span>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="relative mb-4">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            placeholder="Buscar por nombre, marca o código..."
-            class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-          />
-          <ng-icon name="heroMagnifyingGlass" class="absolute left-3.5 top-3 text-slate-400 text-base" />
-        </div>
-
-        <!-- Quick Select Dropdown -->
-        <div class="mb-4">
-          <select [(ngModel)]="selectedProductId" (change)="onSelectProduct()"
-            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold bg-white text-[#0A1931] focus:outline-none focus:border-[#1A3D63]">
-            <option value="">— Seleccionar rápido de lista —</option>
-            <option *ngFor="let p of filteredProducts()" [value]="p.id" [disabled]="p.stock <= 0">
-              {{ p.name }} (Stock: {{ p.stock }}) - S/ {{ p.salePrice | number:'1.2-2' }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Product Cards List -->
-        <div class="max-h-[380px] overflow-y-auto space-y-2.5 pr-1">
-          <div *ngFor="let p of filteredProducts()"
-            class="p-3.5 border border-slate-200/80 rounded-xl hover:border-[#1A3D63] transition-all flex items-center justify-between bg-slate-50/50">
-            <div>
-              <div class="font-bold text-sm text-[#0A1931] leading-snug">{{ p.name }}</div>
-              <div class="text-xs text-[#4A7FA7] font-medium">{{ p.brand }} {{ p.model ? '| ' + p.model : '' }}</div>
-              <div class="text-xs font-mono mt-1" [ngClass]="p.stock > 0 ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'">
-                Stock: {{ p.stock }} unidades
-              </div>
-            </div>
-
-            <button
-              type="button"
-              (click)="addToCart(p)"
-              [disabled]="p.stock <= 0"
-              class="px-3 py-1.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-xs font-bold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1 shadow-xs">
-              <ng-icon name="heroPlus" class="text-sm" />
-              <span>Añadir</span>
-            </button>
-          </div>
-
-          <div *ngIf="filteredProducts().length === 0" class="text-center py-10 text-[#4A7FA7] text-xs font-medium italic">
-            No se encontraron productos coincidentes.
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- Right Column: Exit Cart (7 cols) -->
-    <div class="lg:col-span-7 flex flex-col space-y-4">
-
-      <div class="bg-white border border-slate-200/90 shadow-xs p-6 rounded-2xl flex flex-col justify-between h-full">
-
-        <div>
-          <!-- Cart Header -->
-          <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-            <h3 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider flex items-center gap-2">
-              <ng-icon name="heroShoppingCart" class="text-[#1A3D63] text-lg" />
-              <span>Carrito de Salida ({{ cart.length }} ítems)</span>
-            </h3>
-
-            <button *ngIf="cart.length > 0" (click)="clearCart()"
-              class="text-xs text-rose-600 hover:text-rose-800 flex items-center gap-1 font-bold">
-              <ng-icon name="heroTrash" class="text-sm" />
-              <span>Vaciar carrito</span>
-            </button>
-          </div>
-
-          <!-- Empty Cart -->
-          <div *ngIf="cart.length === 0" class="text-center py-16 text-[#4A7FA7]">
-            <div class="w-14 h-14 rounded-2xl bg-slate-50 text-slate-300 flex items-center justify-center mx-auto mb-3 border border-slate-200">
-              <ng-icon name="heroShoppingCart" class="text-3xl text-slate-400" />
-            </div>
-            <p class="text-base font-bold text-[#0A1931]">El carrito de salida está vacío</p>
-            <p class="text-xs mt-1 text-slate-500">Selecciona productos del catálogo para configurar el egreso de stock.</p>
-          </div>
-
-          <!-- Cart Table -->
-          <div *ngIf="cart.length > 0" class="overflow-x-auto rounded-xl border border-slate-200/80">
-            <table class="table w-full text-left">
-              <thead>
-                <tr class="bg-[#1A3D63] text-white text-xs uppercase tracking-wider">
-                  <th class="py-3 px-3.5 text-white">Producto</th>
-                  <th class="py-3 px-3.5 text-center w-32 text-white">Cant. Salida</th>
-                  <th class="py-3 px-3.5 text-right w-28 text-white">P. Venta</th>
-                  <th class="py-3 px-3.5 text-right w-28 text-white">Subtotal</th>
-                  <th class="py-3 px-3.5 text-center w-10 text-white"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr *ngFor="let item of cart; let i = index" class="text-sm hover:bg-slate-50/80 transition-colors">
-                  <td class="py-3.5 px-3.5">
-                    <div class="font-bold text-[#0A1931]">{{ item.product.name }}</div>
-                    <div class="text-xs text-[#4A7FA7] font-mono">Stock disp: {{ item.product.stock }}</div>
-                    <div *ngIf="item.quantity > item.product.stock" class="text-[11px] text-rose-600 font-extrabold mt-0.5">
-                      ⚠️ Excede el stock disponible
-                    </div>
-                  </td>
-
-                  <!-- Quantity Control -->
-                  <td class="py-3.5 px-3.5 text-center">
-                    <div class="flex items-center justify-center gap-1">
-                      <button (click)="updateQuantity(i, item.quantity - 1)"
-                        class="w-7 h-7 border border-slate-300 rounded-lg bg-white text-[#0A1931] hover:bg-slate-100 text-xs font-bold flex items-center justify-center transition-colors">
-                        -
-                      </button>
-                      <input type="number" min="1" [max]="item.product.stock" [(ngModel)]="item.quantity"
-                        (ngModelChange)="updateQuantity(i, item.quantity)"
-                        class="w-12 text-center py-1 border border-slate-300 rounded-lg text-sm font-mono font-bold focus:outline-none focus:border-[#1A3D63]" />
-                      <button (click)="updateQuantity(i, item.quantity + 1)"
-                        class="w-7 h-7 border border-slate-300 rounded-lg bg-white text-[#0A1931] hover:bg-slate-100 text-xs font-bold flex items-center justify-center transition-colors">
-                        +
-                      </button>
-                    </div>
-                  </td>
-
-                  <td class="py-3.5 px-3.5 text-right font-mono text-xs font-medium text-[#0A1931]">
-                    S/ {{ item.product.salePrice | number:'1.2-2' }}
-                  </td>
-
-                  <td class="py-3.5 px-3.5 text-right font-mono font-bold text-sm text-[#0A1931]">
-                    S/ {{ (item.quantity * item.product.salePrice) | number:'1.2-2' }}
-                  </td>
-
-                  <td class="py-3.5 px-3.5 text-center">
-                    <button (click)="removeFromCart(i)" class="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition-colors">
-                      <ng-icon name="heroXMark" class="text-base" />
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Cart Summary & Actions -->
-        <div *ngIf="cart.length > 0" class="mt-6 pt-5 border-t border-slate-200">
-          <div class="flex justify-between items-center mb-5">
-            <div class="text-xs text-[#4A7FA7] font-semibold">
-              Total Ítems: <span class="font-bold text-[#0A1931] text-sm ml-1">{{ cartTotalItems() }} unidades</span>
-            </div>
-            <div class="text-right">
-              <div class="text-xs text-[#4A7FA7] uppercase tracking-wider font-bold">Total Estimado Salida</div>
-              <div class="text-2xl font-bold font-mono text-[#0A1931]">S/ {{ cartTotal() | number:'1.2-2' }}</div>
+      <div class="max-h-[420px] overflow-y-auto">
+        <div *ngFor="let p of filteredProducts()"
+          class="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-concrete last:border-b-0 hover:bg-mist transition-colors">
+          <div class="min-w-0">
+            <div class="text-[14px] leading-snug">{{ p.name }}</div>
+            <div class="text-label uppercase text-ash mt-1">{{ p.brand }}{{ p.model ? ' / ' + p.model : '' }}</div>
+            <div class="flex items-center gap-1.5 text-label uppercase tnum mt-1.5" [ngClass]="p.stock > 0 ? 'text-carbon' : 'text-ash line-through'">
+              <span *ngIf="p.stock > 0 && p.stock <= p.minStock" class="dot-caution"></span>
+              Stock {{ p.stock }} u.
             </div>
           </div>
-
-          <button
-            type="button"
-            (click)="confirmExit()"
-            [disabled]="cart.length === 0 || saving() || hasStockIssue()"
-            class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md shadow-rose-600/20">
-            <span *ngIf="saving()" class="loading loading-spinner loading-xs text-white"></span>
-            <ng-icon *ngIf="!saving()" name="heroCheck" class="text-base" />
-            <span>{{ saving() ? 'Procesando salida...' : 'Confirmar Salida y Debitar Stock' }}</span>
+          <button type="button" (click)="addToCart(p)" [disabled]="p.stock <= 0" class="btn-pill-ghost btn-pill-sm shrink-0">
+            <ng-icon name="heroPlus" class="text-xs" />
+            Añadir
           </button>
         </div>
 
+        <div *ngIf="filteredProducts().length === 0" class="px-5 py-10 text-label-sm uppercase text-ash">
+          No se encontraron productos coincidentes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Exit cart -->
+    <div class="lg:col-span-7 flex flex-col">
+      <div class="panel-head">
+        <h3 class="panel-title">Carrito de salida <span class="text-ash tnum">({{ cart().length }})</span></h3>
+        <button *ngIf="cart().length > 0" (click)="clearCart()" class="link-underline">Vaciar carrito</button>
       </div>
 
+      <div *ngIf="cart().length === 0" class="empty-state flex-1">
+        <h4 class="h-sub mb-2">Carrito vacío</h4>
+        <p class="text-[14px] text-iron m-0 max-w-sm">Seleccione productos del catálogo para configurar el egreso de stock.</p>
+      </div>
+
+      <div *ngIf="cart().length > 0" class="overflow-x-auto flex-1">
+        <table class="manifest">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="text-center w-36">Cant. salida</th>
+              <th class="text-right w-28">P. venta</th>
+              <th class="text-right w-28">Subtotal</th>
+              <th class="w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cart(); let i = index">
+              <td>
+                <div class="text-[14px]">{{ item.product.name }}</div>
+                <div class="text-label uppercase text-ash tnum mt-1">Disp. {{ item.product.stock }}</div>
+                <div *ngIf="item.quantity > item.product.stock" class="flex items-center gap-1.5 text-label uppercase mt-1.5">
+                  <span class="dot-caution"></span> Excede el stock disponible
+                </div>
+              </td>
+              <td>
+                <div class="flex items-center justify-center gap-1">
+                  <button (click)="updateQuantity(i, item.quantity - 1)" class="btn-round border-concrete">−</button>
+                  <input type="number" min="1" [max]="item.product.stock" [ngModel]="item.quantity"
+                    (ngModelChange)="updateQuantity(i, $event)"
+                    class="w-12 text-center border-0 border-b border-carbon bg-transparent px-0 py-1 text-[14px] tnum focus:ring-0 focus:outline-none" />
+                  <button (click)="updateQuantity(i, item.quantity + 1)" class="btn-round border-concrete">+</button>
+                </div>
+              </td>
+              <td class="text-right tnum text-[13px] text-iron">$ {{ item.product.salePrice | number:'1.2-2' }}</td>
+              <td class="text-right tnum">$ {{ (item.quantity * item.product.salePrice) | number:'1.2-2' }}</td>
+              <td class="text-center">
+                <button (click)="removeFromCart(i)" class="btn-round" title="Quitar">
+                  <ng-icon name="heroXMark" class="text-base" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary -->
+      <div *ngIf="cart().length > 0" class="border-t border-carbon px-5 py-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <span class="eyebrow">Total ítems</span>
+            <div class="text-subheading tnum mt-2">{{ cartTotalItems() }} u.</div>
+          </div>
+          <div class="sm:text-right">
+            <span class="eyebrow">Total estimado salida</span>
+            <div class="text-heading tnum mt-2">$ {{ cartTotal() | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+        <button type="button" (click)="confirmExit()" [disabled]="cart().length === 0 || saving() || hasStockIssue()" class="btn-pill w-full">
+          <span *ngIf="saving()" class="loader"></span>
+          <ng-icon *ngIf="!saving()" name="heroCheck" class="text-sm" />
+          {{ saving() ? 'Procesando salida…' : 'Confirmar salida y debitar stock' }}
+        </button>
+      </div>
     </div>
 
   </div>
-
 </div>
-
-

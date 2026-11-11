@@ -1,91 +1,85 @@
-<div class="page-container max-w-4xl mx-auto">
+<div class="page-container">
 
-  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight">Registro Rápido de Mercadería (Entrada)</h1>
-      <p class="text-sm text-[#4A7FA7] font-medium mt-1">Ingreso masivo de existencias para reposición inmediata en almacén.</p>
+      <span class="eyebrow mb-4">Inventario · Entrada</span>
+      <h1 class="h-display">Registro rápido de mercadería</h1>
+      <p class="lede">Ingreso masivo de existencias para reposición inmediata en almacén.</p>
     </div>
-    <a routerLink="/inventory/history" class="btn btn-sm border-slate-300 bg-white text-[#0A1931] hover:bg-slate-100 rounded-xl font-semibold gap-2 transition-all">
-      <ng-icon name="heroQueueList" class="text-base" />
-      <span>Ver Historial</span>
+    <a routerLink="/inventory/history" class="btn-pill-ghost">
+      <ng-icon name="heroClock" class="text-sm" />
+      Ver historial
     </a>
   </div>
 
-  <!-- Alerts -->
-  <div *ngIf="success()" class="p-4 mb-5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl flex gap-3 items-center">
-    <ng-icon name="heroCheck" class="text-emerald-600 text-xl shrink-0" />
-    <span class="font-medium">{{ success() }}</span>
+  <!-- Notices -->
+  <div *ngIf="success()" class="notice notice-muted mb-6">
+    <ng-icon name="heroCheck" class="text-base shrink-0 mt-0.5" />
+    <span>{{ success() }}</span>
   </div>
-  <div *ngIf="error()" class="p-4 mb-5 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex gap-3 items-center">
-    <ng-icon name="heroExclamationTriangle" class="text-rose-600 text-xl shrink-0" />
-    <span class="font-medium">{{ error() }}</span>
+  <div *ngIf="error()" class="notice mb-6">
+    <ng-icon name="heroExclamationTriangle" class="text-base shrink-0 mt-0.5" />
+    <span>{{ error() }}</span>
   </div>
 
-  <div class="bg-white border border-slate-200/90 shadow-xs rounded-2xl p-6 sm:p-8">
+  <div class="panel max-w-5xl">
 
-    <!-- Loading -->
-    <div *ngIf="loading()" class="flex justify-center py-12">
-      <span class="loading loading-spinner loading-lg text-[#1A3D63]"></span>
+    <div *ngIf="loading()" class="flex items-center gap-3 px-6 py-16 text-label-sm uppercase text-ash">
+      <span class="loader text-carbon"></span> Cargando productos…
     </div>
 
     <ng-container *ngIf="!loading()">
       <!-- Reason -->
-      <div class="mb-6">
-        <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Motivo o Referencia de Entrada *</label>
-        <input type="text" [(ngModel)]="reason" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" placeholder="Ej. Orden de compra N° 1042, Reposición semanal..." />
+      <div class="panel-body border-b border-concrete">
+        <label class="field-label" for="entry-reason">Motivo o referencia de entrada *</label>
+        <input id="entry-reason" type="text" [(ngModel)]="reason" class="field" placeholder="Ej. Orden de compra N° 1042, reposición semanal…" />
       </div>
 
-      <!-- Items Table -->
-      <div class="overflow-x-auto rounded-xl border border-slate-200/80 mb-6">
-        <table class="table table-sm w-full">
+      <!-- Items -->
+      <div class="overflow-x-auto">
+        <table class="manifest">
           <thead>
-            <tr class="bg-[#1A3D63] text-white">
-              <th class="w-1/2 text-white py-3.5">Producto</th>
-              <th class="w-32 text-center text-white py-3.5">Stock Actual</th>
-              <th class="w-40 text-center text-white py-3.5">Cantidad Entrada</th>
-              <th class="w-12 text-center text-white py-3.5"></th>
+            <tr>
+              <th class="w-10 tnum">#</th>
+              <th>Producto</th>
+              <th class="w-32">Stock actual</th>
+              <th class="w-40">Cantidad entrada</th>
+              <th class="w-12"></th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of items; let i = index" class="hover:bg-slate-50/80 transition-colors">
-              <td class="py-3">
-                <select
-                  [(ngModel)]="item.productId"
-                  (ngModelChange)="onProductSelect(i)"
-                  class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm bg-white text-[#0A1931] font-medium focus:outline-none focus:border-[#1A3D63]"
-                >
-                  <option value="">— Seleccionar producto —</option>
-                  <option *ngFor="let p of products()" [value]="p.id">
+            <tr *ngFor="let item of items; let i = index" class="hover:!bg-paper">
+              <td class="tnum text-label text-ash">{{ (i + 1).toString().padStart(2, '0') }}</td>
+              <td>
+                <div class="relative mb-2">
+                  <ng-icon name="heroMagnifyingGlass" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash text-base" />
+                  <input type="text" [(ngModel)]="item.term" (ngModelChange)="onSearch(i)" class="field pl-10"
+                    placeholder="Buscar por nombre, marca, modelo o serie…"
+                    [attr.aria-label]="'Buscar producto de la fila ' + (i + 1)" />
+                </div>
+                <select [(ngModel)]="item.productId" (ngModelChange)="onProductSelect(i)" class="field"
+                  [attr.aria-label]="'Producto de la fila ' + (i + 1)">
+                  <option value="">— Seleccionar producto ({{ filteredProducts(item).length }}) —</option>
+                  <option *ngFor="let p of filteredProducts(item)" [value]="p.id">
                     {{ p.name }} ({{ p.brand }})
                   </option>
                 </select>
               </td>
-              <td class="text-center py-3">
-                <span *ngIf="item.productId" class="px-2.5 py-0.5 text-xs font-bold rounded-full border"
-                  [class.bg-rose-50]="item.currentStock <= 0"
-                  [class.text-rose-700]="item.currentStock <= 0"
-                  [class.border-rose-200]="item.currentStock <= 0"
-                  [class.bg-amber-50]="item.currentStock > 0 && item.currentStock <= 5"
-                  [class.text-amber-800]="item.currentStock > 0 && item.currentStock <= 5"
-                  [class.border-amber-200]="item.currentStock > 0 && item.currentStock <= 5"
-                  [class.bg-emerald-50]="item.currentStock > 5"
-                  [class.text-emerald-800]="item.currentStock > 5"
-                  [class.border-emerald-200]="item.currentStock > 5">
+              <td>
+                <span *ngIf="item.productId" class="badge-pill tnum"
+                  [class.badge-pill-solid]="item.currentStock <= 0">
+                  <span *ngIf="item.currentStock > 0 && item.currentStock <= 5" class="dot-caution"></span>
                   {{ item.currentStock }}
                 </span>
-                <span *ngIf="!item.productId" class="text-slate-400 font-mono">—</span>
+                <span *ngIf="!item.productId" class="text-ash">—</span>
               </td>
-              <td class="py-3">
-                <input
-                  type="number"
-                  [(ngModel)]="item.quantity"
-                  class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm text-[#0A1931] text-center font-mono font-bold focus:outline-none focus:border-[#1A3D63]"
-                  min="1"
-                />
+              <td>
+                <input type="number" [(ngModel)]="item.quantity" class="field text-center tnum" min="1"
+                  [attr.aria-label]="'Cantidad de entrada de la fila ' + (i + 1)" />
               </td>
-              <td class="text-center py-3">
-                <button class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-30" [disabled]="items.length === 1" (click)="removeRow(i)" title="Eliminar fila">
-                  <ng-icon name="heroXMark" class="text-lg" />
+              <td class="text-center">
+                <button class="btn-round" [disabled]="items.length === 1" (click)="removeRow(i)" title="Eliminar fila">
+                  <ng-icon name="heroXMark" class="text-base" />
                 </button>
               </td>
             </tr>
@@ -94,25 +88,18 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <button type="button" class="w-full sm:w-auto px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#0A1931] border border-slate-300 bg-white rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2" (click)="addRow()">
-          <ng-icon name="heroPlusCircle" class="text-base" />
-          <span>Agregar Fila</span>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-5 py-5 border-t border-carbon">
+        <button type="button" class="btn-pill-ghost" (click)="addRow()">
+          <ng-icon name="heroPlus" class="text-sm" />
+          Agregar fila
         </button>
-        <button
-          type="button"
-          class="w-full sm:w-auto px-6 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-[#1A3D63]/20 flex items-center justify-center gap-2 disabled:opacity-50"
-          [disabled]="saving()"
-          (click)="register()"
-        >
-          <span *ngIf="saving()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
-          <ng-icon name="heroArrowDownTray" class="text-base" *ngIf="!saving()" />
-          <span>{{ saving() ? 'Registrando...' : 'Confirmar Entrada' }}</span>
+        <button type="button" class="btn-pill" [disabled]="saving()" (click)="register()">
+          <span *ngIf="saving()" class="loader"></span>
+          <ng-icon name="heroArrowDownTray" class="text-sm" *ngIf="!saving()" />
+          {{ saving() ? 'Registrando…' : 'Confirmar entrada' }}
         </button>
       </div>
     </ng-container>
 
   </div>
 </div>
-
-

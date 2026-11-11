@@ -1,129 +1,113 @@
 <div class="page-container">
+
   <!-- Header -->
-  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight">Catálogo de Productos</h1>
-      <p class="text-sm text-[#4A7FA7] font-medium mt-1">Gestión integral de artículos, existencias, precios y números de serie.</p>
+      <span class="eyebrow mb-4">Catálogo</span>
+      <h1 class="h-display">Productos</h1>
+      <p class="lede">Artículos, existencias, precios y números de serie.</p>
     </div>
-    <a routerLink="/catalog/new"
-      class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-[#1A3D63]/20">
-      <ng-icon name="heroPlusCircle" class="text-lg" />
-      <span>Nuevo Producto</span>
+    <a routerLink="/catalog/new" class="btn-pill">
+      <ng-icon name="heroPlus" class="text-sm" />
+      Nuevo producto
     </a>
   </div>
 
-  <!-- Filters Toolbar -->
-  <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm p-4 flex flex-wrap gap-3 mb-6 items-center">
-    <!-- Search -->
-    <div class="flex flex-1 min-w-[240px] items-center border border-slate-300 rounded-xl bg-slate-50/50 px-3 py-2 focus-within:bg-white focus-within:border-[#1A3D63] focus-within:ring-2 focus-within:ring-[#1A3D63]/20 transition-all">
-      <span class="text-slate-400 mr-2 shrink-0">
-        <ng-icon name="heroMagnifyingGlass" class="text-base" />
-      </span>
+  <!-- Filters -->
+  <div class="ruled grid-cols-1 md:grid-cols-[1fr_220px_240px] mb-10">
+    <div class="flex items-center gap-3 px-4">
+      <ng-icon name="heroMagnifyingGlass" class="text-base text-ash shrink-0" />
       <input
         type="text"
         [(ngModel)]="searchQuery"
         (ngModelChange)="triggerSearch()"
-        placeholder="Buscar por nombre, marca, serie..."
-        class="w-full text-sm bg-transparent focus:outline-none placeholder-slate-400 text-[#0A1931]"
+        placeholder="Buscar por nombre, marca, serie…"
+        class="w-full border-0 bg-transparent py-3.5 px-0 text-[14px] text-carbon placeholder:text-ash/70 focus:ring-0 focus:outline-none"
       />
     </div>
 
-    <!-- Brand filter -->
     <select
       [(ngModel)]="selectedBrand"
       (ngModelChange)="triggerSearch()"
-      class="px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 text-[#0A1931] font-medium w-48"
+      class="border-0 bg-paper py-3.5 px-4 text-label-sm uppercase text-carbon focus:ring-0 focus:outline-none cursor-pointer"
     >
       <option value="">Todas las marcas</option>
       <option *ngFor="let b of brands()" [value]="b">{{ b }}</option>
     </select>
 
-    <!-- Category filter -->
     <select
       [(ngModel)]="selectedCategoryId"
       (ngModelChange)="triggerSearch()"
-      class="px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 text-[#0A1931] font-medium w-52"
+      class="border-0 bg-paper py-3.5 px-4 text-label-sm uppercase text-carbon focus:ring-0 focus:outline-none cursor-pointer"
     >
       <option value="">Todas las categorías</option>
       <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
     </select>
   </div>
 
-  <!-- Main Table Card Container -->
-  <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+  <!-- Table -->
+  <div class="panel">
 
-    <!-- Loading -->
-    <div *ngIf="loading()" class="flex justify-center py-20">
-      <span class="loading loading-spinner loading-md text-[#1A3D63]"></span>
+    <div *ngIf="loading()" class="flex items-center gap-3 px-6 py-16 text-label-sm uppercase text-ash">
+      <span class="loader text-carbon"></span>
+      Cargando catálogo…
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!loading() && products().length === 0" class="text-center py-20 text-[#4A7FA7]">
-      <div class="w-14 h-14 rounded-2xl bg-[#F6FAFD] text-[#4A7FA7] flex items-center justify-center mx-auto mb-3 border border-slate-200">
-        <ng-icon name="heroArchiveBox" class="text-3xl text-[#4A7FA7]" />
-      </div>
-      <p class="text-base font-bold text-[#0A1931]">No se encontraron productos</p>
-      <p class="text-xs mt-1 text-slate-500 max-w-sm mx-auto">Intenta ajustar los criterios de búsqueda o registra un nuevo artículo en el catálogo.</p>
+    <div *ngIf="!loading() && products().length === 0" class="empty-state">
+      <h2 class="h-sub mb-2">No se encontraron productos</h2>
+      <p class="text-[14px] text-iron max-w-md m-0">Ajuste los criterios de búsqueda o registre un nuevo artículo en el catálogo.</p>
     </div>
 
-    <!-- Data Table -->
     <div *ngIf="!loading() && products().length > 0" class="w-full overflow-x-auto">
-      <table class="table table-zebra w-full">
+      <table class="manifest">
         <thead>
-          <tr class="bg-[#1A3D63] text-white">
-            <th class="w-14 py-3.5 text-white">Imagen</th>
-            <th class="py-3.5 text-white">Producto & Categoría</th>
-            <th class="py-3.5 text-white">Marca / Modelo</th>
-            <th class="py-3.5 text-white">N° Serie</th>
-            <th class="text-right w-[100px] py-3.5 text-white">Stock</th>
-            <th class="text-right w-[120px] py-3.5 text-white">P. Venta</th>
-            <th class="text-center w-[100px] py-3.5 text-white">Estado</th>
-            <th class="text-right w-[100px] py-3.5 text-white">Acciones</th>
+          <tr>
+            <th class="w-16"></th>
+            <th>Producto · Categoría</th>
+            <th>Marca / Modelo</th>
+            <th>N° serie</th>
+            <th class="text-right w-[100px]">Stock</th>
+            <th class="text-right w-[120px]">P. venta</th>
+            <th class="w-[110px]">Estado</th>
+            <th class="text-right w-[96px]"></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of products()" class="hover:bg-slate-50/80 transition-colors">
-            <!-- Thumbnail -->
-            <td class="!py-3 !px-4">
-              <div class="w-10 h-10 border border-slate-200 bg-[#F6FAFD] rounded-lg overflow-hidden flex items-center justify-center shrink-0">
-                <img *ngIf="p.imageBase64" [src]="p.imageBase64" [alt]="p.name"
-                  class="w-full h-full object-cover" loading="lazy" />
-                <ng-icon *ngIf="!p.imageBase64" name="heroPhoto" class="text-slate-400 text-lg" />
+          <tr *ngFor="let p of products()">
+            <td class="!py-2.5">
+              <div class="w-11 h-11 rounded-image overflow-hidden bg-paper border border-concrete flex items-center justify-center">
+                <img *ngIf="p.imageBase64" [src]="p.imageBase64" [alt]="p.name" class="w-full h-full object-cover" loading="lazy" />
+                <ng-icon *ngIf="!p.imageBase64" name="heroPhoto" class="text-concrete text-lg" />
               </div>
             </td>
-            <td class="py-3">
-              <div class="font-bold text-[#0A1931] text-sm leading-snug">{{ p.name }}</div>
-              <div class="text-xs text-[#4A7FA7] mt-0.5 font-medium">{{ p.subcategory?.category?.name }} &rsaquo; {{ p.subcategory?.name }}</div>
+            <td>
+              <div class="leading-snug">{{ p.name }}</div>
+              <div class="text-label uppercase text-ash mt-1">{{ p.subcategory?.category?.name }} › {{ p.subcategory?.name }}</div>
             </td>
-            <td class="text-sm text-[#0A1931] py-3">
-              <span class="font-semibold">{{ p.brand }}</span>
-              <span *ngIf="p.model" class="text-slate-500 font-normal ml-1">/ {{ p.model }}</span>
+            <td class="text-[13px]">
+              <span class="uppercase">{{ p.brand }}</span>
+              <span *ngIf="p.model" class="text-ash"> / {{ p.model }}</span>
             </td>
-            <td class="font-mono text-xs text-slate-500 uppercase tracking-wider py-3">{{ p.serialNumber ?? '—' }}</td>
-            <td class="text-right py-3">
-              <span class="font-mono font-bold text-sm"
-                [ngClass]="{'text-rose-600': p.stock <= p.minStock, 'text-emerald-700': p.stock > p.minStock}">
-                {{ p.stock }}
+            <td class="text-label uppercase text-ash tnum">{{ p.serialNumber ?? '—' }}</td>
+            <td class="text-right">
+              <span class="tnum">{{ p.stock }}</span>
+              <span *ngIf="p.stock <= p.minStock" class="flex items-center justify-end gap-1.5 text-label-xs uppercase mt-1">
+                <span class="dot-caution"></span> Mínimo
               </span>
-              <span *ngIf="p.stock <= p.minStock" class="block text-[10px] text-rose-600 font-extrabold uppercase tracking-wide">Mínimo</span>
             </td>
-            <td class="text-right font-mono font-bold text-sm text-[#0A1931] py-3">S/ {{ p.salePrice | number:'1.2-2' }}</td>
-            <td class="text-center py-3">
-              <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider uppercase rounded-full border"
-                [ngClass]="p.isActive
-                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                  : 'text-slate-500 bg-slate-100 border-slate-200'">
+            <td class="text-right tnum">$ {{ p.salePrice | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge-pill" [ngClass]="p.isActive ? '' : 'badge-pill-muted'">
                 {{ p.isActive ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td class="text-right py-3">
+            <td class="text-right">
               <div class="flex gap-1 justify-end">
-                <button class="p-2 text-slate-500 hover:text-[#1A3D63] hover:bg-slate-100 rounded-lg transition-all" title="Editar" (click)="edit(p.id)">
+                <button class="btn-round" title="Editar" (click)="edit(p.id)">
                   <ng-icon name="heroPencilSquare" class="text-base" />
                 </button>
-                <button class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Eliminar"
-                  [disabled]="deleting() === p.id" (click)="delete(p.id)">
-                  <span *ngIf="deleting() === p.id" class="loading loading-spinner loading-xs text-rose-600"></span>
+                <button class="btn-round" title="Eliminar" [disabled]="deleting() === p.id" (click)="delete(p.id)">
+                  <span *ngIf="deleting() === p.id" class="loader w-3.5 h-3.5"></span>
                   <ng-icon name="heroTrash" class="text-base" *ngIf="deleting() !== p.id" />
                 </button>
               </div>
@@ -132,31 +116,25 @@
         </tbody>
       </table>
 
-      <!-- Pagination Footer -->
-      <div class="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50/50 gap-3" *ngIf="totalPages > 1">
-        <span class="text-xs text-[#4A7FA7] font-semibold">
-          {{ total }} productos registrados &bull; Página {{ currentPage }} de {{ totalPages }}
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t border-carbon">
+        <span class="text-label uppercase text-ash tnum">
+          {{ total }} productos · Página {{ currentPage }} de {{ totalPages }}
         </span>
-        <div class="flex gap-1.5">
-          <button class="px-3 py-1.5 border border-slate-300 text-xs font-semibold rounded-lg disabled:opacity-40 hover:bg-white text-[#0A1931] transition-colors"
-            [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-            <ng-icon name="heroChevronLeft" class="text-xs" />
+        <div class="flex items-center gap-1">
+          <button class="btn-round" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)" title="Anterior">
+            <ng-icon name="heroChevronLeft" class="text-sm" />
           </button>
           <button
             *ngFor="let pg of pages"
-            class="px-3.5 py-1.5 border text-xs font-bold rounded-lg transition-colors"
-            [ngClass]="pg === currentPage
-              ? 'bg-[#1A3D63] text-white border-[#1A3D63] shadow-sm'
-              : 'border-slate-300 text-[#0A1931] hover:bg-white'"
+            class="w-8 h-8 rounded-full border text-label tnum transition-colors"
+            [ngClass]="pg === currentPage ? 'bg-carbon text-paper border-carbon' : 'border-transparent text-carbon hover:border-carbon'"
             (click)="goToPage(pg)">{{ pg }}</button>
-          <button class="px-3 py-1.5 border border-slate-300 text-xs font-semibold rounded-lg disabled:opacity-40 hover:bg-white text-[#0A1931] transition-colors"
-            [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-            <ng-icon name="heroChevronRight" class="text-xs" />
+          <button class="btn-round" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" title="Siguiente">
+            <ng-icon name="heroChevronRight" class="text-sm" />
           </button>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-

@@ -1,227 +1,179 @@
-<!-- Page Header -->
 <div class="page-container">
-  <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
-    <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight">Dashboard General</h1>
-      <p class="text-sm text-[#4A7FA7] font-medium mt-1">Resumen en tiempo real del catálogo, valorización de existencias y flujo de movimientos.</p>
-    </div>
 
-    <!-- Quick Action Toolbar -->
-    <div class="flex items-center gap-3">
-      <a routerLink="/inventory" class="btn btn-sm bg-[#1A3D63] hover:bg-[#0A1931] text-white border-none font-semibold rounded-lg px-4 gap-2 transition-all">
-        <ng-icon name="heroPlus" class="text-base" />
-        Entrada Stock
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <span class="eyebrow mb-4">Resumen en tiempo real</span>
+      <h1 class="h-display">Dashboard general</h1>
+      <p class="lede">Catálogo, valorización de existencias y flujo de movimientos.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a routerLink="/inventory" class="btn-pill">
+        <ng-icon name="heroPlus" class="text-sm" />
+        Entrada stock
       </a>
-      <a routerLink="/inventory/out-register" class="btn btn-sm bg-white hover:bg-slate-100 text-[#1A3D63] border border-slate-300 font-semibold rounded-lg px-4 gap-2 transition-all">
-        <ng-icon name="heroMinus" class="text-base" />
-        Salida Stock
+      <a routerLink="/inventory/out-register" class="btn-pill-ghost">
+        Salida stock
       </a>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading()" class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200/80 shadow-sm mb-6">
-    <span class="loading loading-spinner loading-lg text-[#1A3D63]"></span>
-    <p class="mt-4 text-[#4A7FA7] font-semibold text-sm">Cargando métricas y análisis de inventario...</p>
+  <!-- Loading -->
+  <div *ngIf="loading()" class="panel flex items-center gap-3 px-6 py-16 text-label-sm uppercase text-ash">
+    <span class="loader text-carbon"></span>
+    Cargando métricas de inventario…
   </div>
 
   <ng-container *ngIf="!loading()">
-    <!-- KPI Cards Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
 
-      <!-- Total Productos -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-[#1A3D63]/30 transition-all duration-200 flex items-start justify-between">
-        <div>
-          <span class="text-xs font-semibold text-[#4A7FA7] uppercase tracking-wider block mb-1">Total Productos</span>
-          <div class="text-3xl font-extrabold text-[#0A1931] font-mono tracking-tight">{{ totalProducts() }}</div>
-          <span class="text-xs text-slate-500 font-medium mt-1 inline-block">Artículos registrados</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-[#F6FAFD] border border-[#B3CFE5]/40 flex items-center justify-center text-[#1A3D63] shrink-0">
-          <ng-icon name="heroArchiveBox" class="text-2xl" />
-        </div>
+    <!-- KPI row: ruled lattice -->
+    <div class="ruled grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-16">
+      <div class="p-6">
+        <span class="eyebrow">Total productos</span>
+        <div class="text-display tnum mt-6">{{ totalProducts() }}</div>
+        <span class="block text-label uppercase text-ash mt-3">Artículos registrados</span>
       </div>
 
-      <!-- Valor Estimado Inventario -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all duration-200 flex items-start justify-between">
-        <div>
-          <span class="text-xs font-semibold text-[#4A7FA7] uppercase tracking-wider block mb-1">Valorización Total</span>
-          <div class="text-3xl font-extrabold text-emerald-700 font-mono tracking-tight">
-            {{ totalInventoryValue() | currency:'S/ ':'symbol':'1.2-2' }}
-          </div>
-          <span class="text-xs text-emerald-600 font-medium mt-1 inline-block">Suma total en almacén</span>
+      <div class="p-6">
+        <span class="eyebrow">Valorización total</span>
+        <div class="h-[48px] flex items-center text-2xl sm:text-3xl lg:text-[28px] xl:text-heading 2xl:text-[36px] font-normal tracking-tight tnum mt-6 whitespace-nowrap overflow-hidden text-ellipsis leading-none"
+             [title]="'$ ' + (totalInventoryValue() | number:'1.2-2')">
+          $ {{ totalInventoryValue() | number:'1.2-2' }}
         </div>
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
-          <ng-icon name="heroBanknotes" class="text-2xl" />
-        </div>
+        <span class="block text-label uppercase text-ash mt-3">Suma total en almacén</span>
       </div>
 
-      <!-- Categorías -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-indigo-500/30 transition-all duration-200 flex items-start justify-between">
-        <div>
-          <span class="text-xs font-semibold text-[#4A7FA7] uppercase tracking-wider block mb-1">Categorías</span>
-          <div class="text-3xl font-extrabold text-indigo-900 font-mono tracking-tight">{{ totalCategories() }}</div>
-          <span class="text-xs text-indigo-600 font-medium mt-1 inline-block">Agrupaciones activas</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200/60 flex items-center justify-center text-indigo-600 shrink-0">
-          <ng-icon name="heroTag" class="text-2xl" />
-        </div>
+      <div class="p-6">
+        <span class="eyebrow">Categorías</span>
+        <div class="text-display tnum mt-6">{{ totalCategories() }}</div>
+        <span class="block text-label uppercase text-ash mt-3">Agrupaciones activas</span>
       </div>
 
-      <!-- Stock Bajo -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-start justify-between"
-           [ngClass]="lowStockProducts().length > 0 ? 'border-amber-300 bg-amber-50/20' : ''">
-        <div>
-          <span class="text-xs font-semibold text-[#4A7FA7] uppercase tracking-wider block mb-1">Stock Crítico</span>
-          <div class="text-3xl font-extrabold font-mono tracking-tight" [ngClass]="lowStockProducts().length > 0 ? 'text-amber-600' : 'text-emerald-600'">
-            {{ lowStockProducts().length }}
-          </div>
-          <span class="text-xs font-medium mt-1 inline-block" [ngClass]="lowStockProducts().length > 0 ? 'text-amber-700' : 'text-emerald-600'">
-            {{ lowStockProducts().length > 0 ? 'Requieren reposición' : 'Stock óptimo' }}
-          </span>
-        </div>
-        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-             [ngClass]="lowStockProducts().length > 0 ? 'bg-amber-100 border border-amber-200 text-amber-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-600'">
-          <ng-icon name="heroExclamationTriangle" class="text-2xl" />
-        </div>
+      <div class="p-6" [ngClass]="lowStockProducts().length > 0 ? '!bg-carbon text-paper' : ''">
+        <span class="eyebrow flex items-center gap-2" [ngClass]="lowStockProducts().length > 0 ? '!text-paper/70' : ''">
+          <span *ngIf="lowStockProducts().length > 0" class="dot-caution"></span>
+          Stock crítico
+        </span>
+        <div class="text-display tnum mt-6">{{ lowStockProducts().length }}</div>
+        <span class="block text-label uppercase mt-3" [ngClass]="lowStockProducts().length > 0 ? 'text-paper/70' : 'text-ash'">
+          {{ lowStockProducts().length > 0 ? 'Requieren reposición' : 'Stock óptimo' }}
+        </span>
       </div>
-
     </div>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-      
-      <!-- Chart: Categorías (Doughnut) -->
-      <div class="lg:col-span-5 bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold text-[#0A1931] flex items-center gap-2">
-            <ng-icon name="heroChartPie" class="text-lg text-[#1A3D63]" />
-            Distribución por Categoría
-          </h2>
+    <!-- Charts -->
+    <div class="mb-6">
+      <span class="eyebrow mb-3">Análisis</span>
+      <h2 class="h-heading mb-8">Distribución y flujo</h2>
+    </div>
+    <div class="ruled grid-cols-1 lg:grid-cols-12 mb-16">
+      <div class="lg:col-span-5">
+        <div class="panel-head">
+          <h3 class="panel-title">Distribución por categoría</h3>
+          <span class="text-label uppercase text-ash">Productos</span>
         </div>
-        <div class="relative h-64 flex items-center justify-center">
+        <div class="relative h-72 p-5">
           <canvas #categoryCanvas></canvas>
         </div>
       </div>
 
-      <!-- Chart: Movimientos (Bar Chart) -->
-      <div class="lg:col-span-7 bg-white border border-[#B3CFE5]/60 rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold text-[#0A1931] flex items-center gap-2">
-            <ng-icon name="heroChartBarSquare" class="text-lg text-[#1A3D63]" />
-            Flujo de Movimientos (Últimos 14 días)
-          </h2>
-          <span class="text-xs text-[#4A7FA7] font-medium">Entradas vs Salidas</span>
+      <div class="lg:col-span-7">
+        <div class="panel-head">
+          <h3 class="panel-title">Flujo de movimientos — 14 días</h3>
+          <span class="text-label uppercase text-ash">Entradas / Salidas</span>
         </div>
-        <div class="relative h-64">
+        <div class="relative h-72 p-5">
           <canvas #movementCanvas></canvas>
         </div>
       </div>
-
     </div>
 
-    <!-- Tables Grid Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Tables -->
+    <div class="ruled grid-cols-1 lg:grid-cols-2">
 
-      <!-- Low Stock Alert Table -->
-      <div class="bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
-        <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-base font-bold text-amber-700 flex items-center gap-2">
-            <ng-icon name="heroExclamationTriangle" class="text-lg" />
-            Alertas de Stock Mínimo
-          </h2>
-          <span class="badge bg-amber-50 text-amber-700 border-amber-200 font-semibold badge-sm">
+      <!-- Low stock -->
+      <div>
+        <div class="panel-head">
+          <h3 class="panel-title flex items-center gap-2">
+            <span *ngIf="lowStockProducts().length > 0" class="dot-caution"></span>
+            Alertas de stock mínimo
+          </h3>
+          <span class="badge-pill" [ngClass]="lowStockProducts().length > 0 ? 'badge-pill-solid' : 'badge-pill-muted'">
             {{ lowStockProducts().length }} críticas
           </span>
         </div>
 
-        <div class="p-5">
-          <div *ngIf="lowStockProducts().length === 0" class="text-[#4A7FA7] text-center py-8 font-medium text-sm">
-            ✅ Todos los productos tienen stock suficiente.
-          </div>
+        <div *ngIf="lowStockProducts().length === 0" class="px-5 py-12 text-label-sm uppercase text-ash">
+          Todos los productos tienen stock suficiente.
+        </div>
 
-          <div *ngIf="lowStockProducts().length > 0" class="overflow-x-auto rounded-lg border border-[#B3CFE5]/40">
-            <table class="table table-zebra table-sm w-full">
-              <thead>
-                <tr class="bg-[#1A3D63] text-white">
-                  <th class="text-white text-xs">Producto</th>
-                  <th class="text-white text-xs">Marca</th>
-                  <th class="text-white text-xs">Stock</th>
-                  <th class="text-white text-xs text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let p of lowStockProducts()">
-                  <td class="font-semibold text-[#0A1931] text-xs">{{ p.name }}</td>
-                  <td class="text-[#4A7FA7] text-xs">{{ p.brand }}</td>
-                  <td>
-                    <span class="badge bg-rose-100 text-rose-700 border border-rose-200 font-bold badge-xs">
-                      {{ p.stock }} / min {{ p.minStock }}
-                    </span>
-                  </td>
-                  <td class="text-right">
-                    <a [routerLink]="['/inventory']" class="btn btn-xs bg-[#1A3D63] hover:bg-[#0A1931] text-white border-none">
-                      + Entrada
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div *ngIf="lowStockProducts().length > 0" class="overflow-x-auto">
+          <table class="manifest manifest-sm">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Stock / Mín.</th>
+                <th class="text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of lowStockProducts()">
+                <td class="text-[13px]">{{ p.name }}</td>
+                <td class="text-label uppercase text-ash">{{ p.brand }}</td>
+                <td class="tnum text-[13px]">{{ p.stock }} <span class="text-ash">/ {{ p.minStock }}</span></td>
+                <td class="text-right">
+                  <a [routerLink]="['/inventory']" class="btn-pill-ghost btn-pill-sm">+ Entrada</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Recent Movements Table -->
-      <div class="bg-white border border-[#B3CFE5]/60 shadow-sm rounded-xl hover:shadow-md transition-shadow duration-300">
-        <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-base font-bold text-[#0A1931] flex items-center gap-2">
-            <ng-icon name="heroClock" class="text-lg text-[#1A3D63]" />
-            Últimos Movimientos
-          </h2>
-          <a routerLink="/inventory/history" class="text-xs text-[#1A3D63] hover:underline font-semibold">
-            Ver todo &rarr;
-          </a>
+      <!-- Recent movements -->
+      <div>
+        <div class="panel-head">
+          <h3 class="panel-title">Últimos movimientos</h3>
+          <a routerLink="/inventory/history" class="link-underline">Ver todo ↗</a>
         </div>
 
-        <div class="p-5">
-          <div *ngIf="recentMovements().length === 0" class="text-[#4A7FA7] text-center py-8 font-medium text-sm">
-            No hay movimientos registrados recientemente.
-          </div>
+        <div *ngIf="recentMovements().length === 0" class="px-5 py-12 text-label-sm uppercase text-ash">
+          No hay movimientos registrados recientemente.
+        </div>
 
-          <div *ngIf="recentMovements().length > 0" class="overflow-x-auto rounded-lg border border-[#B3CFE5]/40">
-            <table class="table table-zebra table-sm w-full">
-              <thead>
-                <tr class="bg-[#1A3D63] text-white">
-                  <th class="text-white text-xs">Fecha</th>
-                  <th class="text-white text-xs">Tipo</th>
-                  <th class="text-white text-xs">Producto</th>
-                  <th class="text-white text-xs text-right">Cant.</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let m of recentMovements()">
-                  <td class="text-[#4A7FA7] font-mono text-[11px] whitespace-nowrap">
-                    {{ m.createdAt | date:'dd MMM, HH:mm' }}
-                  </td>
-                  <td>
-                    <span class="px-1.5 py-0.5 text-[10px] font-bold border rounded-md" [ngClass]="typeLabels[m.type].class">
-                      {{ typeLabels[m.type].label || m.type }}
-                    </span>
-                  </td>
-                  <td class="font-semibold text-[#0A1931] text-xs truncate max-w-[140px]">
-                    {{ m.product?.name ?? m.productId }}
-                  </td>
-                  <td class="text-right font-mono text-xs font-bold" [ngClass]="{'text-emerald-700': m.quantity > 0, 'text-rose-600': m.quantity < 0}">
-                    {{ m.quantity > 0 ? '+' : '' }}{{ m.quantity }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div *ngIf="recentMovements().length > 0" class="overflow-x-auto">
+          <table class="manifest manifest-sm">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Producto</th>
+                <th class="text-right">Cant.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of recentMovements()">
+                <td class="tnum text-label uppercase text-ash whitespace-nowrap">
+                  {{ m.createdAt | date:'dd MMM, HH:mm' }}
+                </td>
+                <td>
+                  <span class="badge-pill" [ngClass]="typeLabels[m.type].class">
+                    {{ typeLabels[m.type].label || m.type }}
+                  </span>
+                </td>
+                <td class="text-[13px] truncate max-w-[160px]">
+                  {{ m.product?.name ?? m.productId }}
+                </td>
+                <td class="text-right tnum text-[13px]">
+                  {{ m.quantity > 0 ? '+' : '' }}{{ m.quantity }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
     </div>
   </ng-container>
 </div>
-
-

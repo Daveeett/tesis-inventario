@@ -7,7 +7,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Product, Category, ProductSearchParams, PaginatedResponse } from '../../../../core/models/api.models';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-product-list-page',
@@ -51,7 +51,6 @@ export class ProductListPage implements OnInit {
     this.search$
       .pipe(
         debounceTime(300),
-        distinctUntilChanged(),
         switchMap(() => {
           this.loading.set(true);
           const params: ProductSearchParams = {

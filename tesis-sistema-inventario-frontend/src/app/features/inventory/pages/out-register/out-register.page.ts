@@ -35,14 +35,14 @@ export class OutRegisterPage implements OnInit {
   selectedProductId = '';
 
   // Exit Cart
-  cart: CartItem[] = [];
+  readonly cart = signal<CartItem[]>([]);
 
   readonly cartTotal = computed(() => {
-    return this.cart.reduce((total, item) => total + (item.quantity * item.product.salePrice), 0);
+    return this.cart().reduce((total, item) => total + (item.quantity * item.product.salePrice), 0);
   });
 
   readonly cartTotalItems = computed(() => {
-    return this.cart.reduce((total, item) => total + item.quantity, 0);
+    return this.cart().reduce((total, item) => total + item.quantity, 0);
   });
 
   constructor(
@@ -82,14 +82,18 @@ export class OutRegisterPage implements OnInit {
   addToCart(product: Product) {
     if (!product || product.stock <= 0) return;
 
-    const existingIndex = this.cart.findIndex((i) => i.product.id === product.id);
-    if (existingIndex > -1) {
-      if (this.cart[existingIndex].quantity < product.stock) {
-        this.cart[existingIndex].quantity += 1;
+    this.cart.update((items) => {
+      const existingIndex = items.findIndex((i) => i.product.id === product.id);
+      if (existingIndex > -1) {
+        return items.map((item, idx) => {
+          if (idx === existingIndex && item.quantity < product.stock) {
+            return { ...item, quantity: item.quantity + 1 };
+          }
+          return item;
+        });
       }
-    } else {
-      this.cart.push({ product, quantity: 1 });
-    }
+      return [...items, { product, quantity: 1 }];
+    });
   }
 
   onSelectProduct() {
@@ -101,40 +105,44 @@ export class OutRegisterPage implements OnInit {
     }
   }
 
-  updateQuantity(index: number, newQty: number) {
-    if (newQty <= 0) {
+  updateQuantity(index: number, newQty: number | string) {
+    const parsedQty = typeof newQty === 'string' ? parseInt(newQty, 10) : newQty;
+    if (isNaN(parsedQty) || parsedQty <= 0) {
       this.removeFromCart(index);
       return;
     }
-    const item = this.cart[index];
-    if (newQty > item.product.stock) {
-      item.quantity = item.product.stock;
-    } else {
-      item.quantity = newQty;
-    }
+    this.cart.update((items) => {
+      return items.map((item, idx) => {
+        if (idx === index) {
+          const qty = Math.min(parsedQty, item.product.stock);
+          return { ...item, quantity: qty };
+        }
+        return item;
+      });
+    });
   }
 
   removeFromCart(index: number) {
-    this.cart.splice(index, 1);
+    this.cart.update((items) => items.filter((_, idx) => idx !== index));
   }
 
   clearCart() {
-    this.cart = [];
+    this.cart.set([]);
   }
 
   hasStockIssue(): boolean {
-    return this.cart.some((item) => item.quantity > item.product.stock || item.quantity <= 0);
+    return this.cart().some((item) => item.quantity > item.product.stock || item.quantity <= 0);
   }
 
   confirmExit() {
-    if (this.cart.length === 0 || this.saving() || this.hasStockIssue()) return;
+    if (this.cart().length === 0 || this.saving() || this.hasStockIssue()) return;
 
     this.saving.set(true);
     this.error.set('');
     this.success.set('');
 
     const payload = {
-      items: this.cart.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
+      items: this.cart().map((i) => ({ productId: i.product.id, quantity: i.quantity })),
       reason: this.reason,
       customerName: this.customerName || undefined,
       exitDate: this.exitDate || undefined,
@@ -144,7 +152,7 @@ export class OutRegisterPage implements OnInit {
       next: (res) => {
         this.saving.set(false);
         this.success.set(`✅ Salida registrada exitosamente. ${this.cartTotalItems()} producto(s) debitado(s) del inventario.`);
-        this.cart = [];
+        this.cart.set([]);
         this.customerName = '';
         this.loadProducts(); // Refresh stocks
       },

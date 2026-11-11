@@ -1,308 +1,236 @@
-<div class="page-container max-w-4xl mx-auto">
+<div class="page-container">
 
   <!-- Header -->
-  <div class="page-header flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+  <div class="page-header">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight">{{ isEdit ? 'Editar Producto' : 'Nuevo Producto' }}</h1>
-      <p class="text-sm text-[#4A7FA7] font-medium mt-1">{{ isEdit ? 'Modifique los datos y existencias del producto en catálogo.' : 'Complete el formulario o escanee el código de barras para registrar el producto.' }}</p>
+      <span class="eyebrow mb-4">Catálogo · {{ isEdit ? 'Edición' : 'Alta' }}</span>
+      <h1 class="h-display">{{ isEdit ? 'Editar producto' : 'Nuevo producto' }}</h1>
+      <p class="lede">{{ isEdit ? 'Modifique los datos y existencias del producto en catálogo.' : 'Complete el formulario o escanee el código de barras para registrar el producto.' }}</p>
     </div>
-    <a routerLink="/catalog" class="btn btn-sm border-slate-300 bg-white text-[#0A1931] hover:bg-slate-100 rounded-xl font-semibold gap-2 transition-all">
-      <ng-icon name="heroChevronLeft" class="text-base" />
-      <span>Volver</span>
+    <a routerLink="/catalog" class="btn-pill-ghost">
+      <ng-icon name="heroChevronLeft" class="text-sm" />
+      Volver
     </a>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading()" class="flex justify-center py-20 bg-white rounded-2xl border border-slate-200">
-    <span class="loading loading-spinner loading-md text-[#1A3D63]"></span>
+  <div *ngIf="loading()" class="panel flex items-center gap-3 px-6 py-16 text-label-sm uppercase text-ash max-w-5xl">
+    <span class="loader text-carbon"></span> Cargando producto…
   </div>
 
   <!-- Form -->
-  <form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="save()" class="space-y-6">
+  <form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="save()" class="max-w-5xl">
 
-    <!-- Barcode Quick Lookup & Camera Scanner Section -->
-    <div class="bg-[#0A1931] text-white p-6 rounded-2xl border border-[#1A3D63] shadow-md relative overflow-hidden">
-      <!-- Ambient Grid -->
-      <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#B3CFE5 1px, transparent 1px); background-size: 20px 20px;"></div>
-
-      <div class="relative z-10">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-[#1A3D63] border border-[#4A7FA7]/40 flex items-center justify-center">
-              <ng-icon name="heroQrCode" class="text-xl text-[#B3CFE5]" />
-            </div>
-            <div>
-              <h2 class="text-sm font-bold uppercase tracking-wider text-[#B3CFE5]">Escaneo de Código de Barras</h2>
-              <p class="text-xs text-[#B3CFE5]/80">Captura la serie con cámara o ingresa el código EAN/UPC para autollenar datos.</p>
-            </div>
-          </div>
-
-          <div class="flex gap-2">
-            <!-- Camera Scanner Button -->
-            <button
-              type="button"
-              (click)="startCameraScanner()"
-              class="px-3.5 py-2 bg-[#4A7FA7] hover:bg-[#1A3D63] text-white text-xs font-bold transition-all flex items-center gap-2 rounded-xl shadow-sm"
-            >
-              <ng-icon name="heroCamera" class="text-base" />
-              <span>Abrir Cámara</span>
-            </button>
-
-            <!-- Photo Capture Fallback -->
-            <label class="cursor-pointer px-3.5 py-2 bg-[#1A3D63] hover:bg-[#4A7FA7] text-white text-xs font-bold transition-all flex items-center gap-2 rounded-xl border border-[#4A7FA7]/30">
-              <ng-icon name="heroPhoto" class="text-base" />
-              <span>Tomar Foto</span>
-              <input type="file" accept="image/*" capture="environment" class="hidden" (change)="onScanPhoto($event)" />
-            </label>
-          </div>
+    <!-- Barcode lookup: the only inverted surface on the page -->
+    <div class="bg-carbon text-paper p-6 sm:p-8 mb-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+        <div>
+          <span class="block text-label uppercase text-paper/60 mb-3">Escaneo de código de barras</span>
+          <h2 class="h-sub text-paper">Autollenar por EAN / UPC</h2>
+          <p class="text-[13px] text-paper/70 mt-2 mb-0 max-w-md">Capture la serie con la cámara o ingrese el código para completar los datos.</p>
         </div>
-
-        <div class="flex gap-2 mt-4">
-          <input
-            type="text"
-            [(ngModel)]="barcodeSearchInput"
-            [ngModelOptions]="{standalone: true}"
-            (keyup.enter)="lookupBarcode()"
-            placeholder="Ej. 7702004001234 o escanea..."
-            class="flex-1 px-4 py-2.5 text-sm bg-white text-[#0A1931] border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A7FA7] font-mono"
-          />
-          <button
-            type="button"
-            (click)="lookupBarcode()"
-            [disabled]="barcodeSearching() || !barcodeSearchInput.trim()"
-            class="px-5 py-2.5 bg-[#1A3D63] hover:bg-[#4A7FA7] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 shrink-0"
-          >
-            <span *ngIf="barcodeSearching()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
-            <ng-icon *ngIf="!barcodeSearching()" name="heroMagnifyingGlass" class="text-base" />
-            <span>{{ barcodeSearching() ? 'Buscando...' : 'Buscar Internet' }}</span>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" (click)="startCameraScanner()"
+            class="inline-flex items-center gap-2 rounded-full bg-paper text-carbon border border-paper px-4 py-2 text-label uppercase hover:bg-mist transition-colors">
+            <ng-icon name="heroCamera" class="text-sm" />
+            Abrir cámara
           </button>
+          <label class="cursor-pointer inline-flex items-center gap-2 rounded-full border border-paper text-paper px-4 py-2 text-label uppercase hover:bg-paper hover:text-carbon transition-colors">
+            <ng-icon name="heroPhoto" class="text-sm" />
+            Tomar foto
+            <input type="file" accept="image/*" capture="environment" class="hidden" (change)="onScanPhoto($event)" />
+          </label>
         </div>
       </div>
-    </div>
 
-    <!-- Live Camera Scanner Overlay / Modal -->
-    <div *ngIf="cameraActive()" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div class="bg-[#0A1931] border border-[#1A3D63] rounded-2xl max-w-md w-full p-6 text-white flex flex-col items-center shadow-2xl">
-        <div class="w-full flex items-center justify-between mb-3 border-b border-[#1A3D63] pb-3">
-          <span class="text-sm font-bold flex items-center gap-2 text-[#B3CFE5]">
-            <ng-icon name="heroCamera" class="text-lg text-[#B3CFE5]" />
-            Escaneando Código de Barras...
-          </span>
-          <button (click)="stopCameraScanner()" class="p-1.5 hover:bg-[#1A3D63] rounded-lg text-[#B3CFE5]">
-            <ng-icon name="heroXMark" class="text-xl" />
-          </button>
-        </div>
-
-        <p class="text-xs text-[#B3CFE5]/80 mb-4 text-center">
-          Apunta la cámara del móvil directamente al código de barras del producto.
-        </p>
-
-        <!-- Video Stream Container -->
-        <div class="relative w-full h-64 bg-black rounded-xl overflow-hidden flex items-center justify-center border-2 border-[#4A7FA7]">
-          <video #scannerVideo class="w-full h-full object-cover" playsinline muted></video>
-          <!-- Scanning Reticle -->
-          <div class="absolute inset-x-8 top-1/2 transform -translate-y-1/2 border-t-2 border-rose-500 shadow-lg animate-pulse"></div>
-        </div>
-
-        <button
-          type="button"
-          (click)="stopCameraScanner()"
-          class="mt-4 px-4 py-2.5 bg-[#1A3D63] hover:bg-[#4A7FA7] text-[#B3CFE5] text-xs font-bold uppercase tracking-wider rounded-xl w-full">
-          Cancelar Escaneo
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          [(ngModel)]="barcodeSearchInput"
+          [ngModelOptions]="{ standalone: true }"
+          (keyup.enter)="lookupBarcode()"
+          placeholder="Ej. 7702004001234 o escanee…"
+          class="flex-1 bg-transparent border-0 border-b border-paper/60 px-0 py-2.5 text-[16px] text-paper tnum placeholder:text-paper/40 focus:ring-0 focus:outline-none focus:border-paper"
+        />
+        <button type="button" (click)="lookupBarcode()" [disabled]="barcodeSearching() || !barcodeSearchInput.trim()"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-paper text-carbon px-[22px] py-3 text-label-sm uppercase shrink-0 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-mist transition-colors">
+          <span *ngIf="barcodeSearching()" class="loader"></span>
+          <ng-icon *ngIf="!barcodeSearching()" name="heroMagnifyingGlass" class="text-sm" />
+          {{ barcodeSearching() ? 'Buscando…' : 'Buscar en internet' }}
         </button>
       </div>
     </div>
 
-    <!-- Success / Error Alert Banners -->
-    <div *ngIf="successMessage()" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl flex gap-3 items-start">
-      <ng-icon name="heroCheckCircle" class="shrink-0 mt-0.5 text-emerald-600 text-lg" />
-      <span class="font-medium">{{ successMessage() }}</span>
-    </div>
-
-    <div *ngIf="cameraError()" class="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex gap-3 items-start">
-      <ng-icon name="heroExclamationTriangle" class="shrink-0 mt-0.5 text-rose-600 text-lg" />
-      <span class="font-medium">{{ cameraError() }}</span>
-    </div>
-
-    <div *ngIf="error()" class="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex gap-3 items-start">
-      <ng-icon name="heroExclamationTriangle" class="shrink-0 mt-0.5 text-rose-600 text-lg" />
-      <span class="font-medium">{{ error() }}</span>
-    </div>
-
-    <!-- Basic Info Form Card -->
-    <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Información Básica</h2>
-      </div>
-      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2" for="name">Nombre del Producto *</label>
-          <input id="name" type="text" formControlName="name"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-            [class.border-rose-500]="form.get('name')?.touched && form.get('name')?.invalid"
-            placeholder="Ej. Laptop HP Pavilion 15" />
+    <!-- Camera scanner overlay -->
+    <div *ngIf="cameraActive()" class="fixed inset-0 z-50 bg-carbon/90 flex items-center justify-center p-4">
+      <div class="bg-paper max-w-md w-full">
+        <div class="panel-head">
+          <span class="panel-title">Escaneando código de barras…</span>
+          <button type="button" (click)="stopCameraScanner()" class="btn-round" title="Cerrar">
+            <ng-icon name="heroXMark" class="text-base" />
+          </button>
         </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2" for="brand">Marca *</label>
-          <input id="brand" type="text" formControlName="brand"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-            [class.border-rose-500]="form.get('brand')?.touched && form.get('brand')?.invalid"
-            placeholder="Ej. HP, Samsung, Apple" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2" for="model">Modelo</label>
-          <input id="model" type="text" formControlName="model"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-            placeholder="Ej. Pavilion 15-eg2xxx" />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2" for="serial">Código de Barras / N° Serie</label>
-          <input id="serial" type="text" formControlName="serialNumber"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl font-mono text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-            placeholder="Código único o serie" />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2" for="description">Descripción</label>
-          <textarea id="description" formControlName="description" rows="3"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 resize-none"
-            placeholder="Descripción breve del producto..."></textarea>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Image Upload Card -->
-    <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Imagen del Producto</h2>
-      </div>
-      <div class="p-6">
-        <div class="flex flex-col sm:flex-row gap-6 items-start">
-
-          <!-- Preview -->
-          <div class="w-36 h-36 border border-slate-200 bg-[#F6FAFD] rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-            <div *ngIf="imageLoading()" class="flex items-center justify-center w-full h-full">
-              <span class="loading loading-spinner loading-sm text-[#1A3D63]"></span>
-            </div>
-            <img *ngIf="imagePreview && !imageLoading()" [src]="imagePreview" alt="Preview" class="w-full h-full object-cover" />
-            <ng-icon *ngIf="!imagePreview && !imageLoading()" name="heroPhoto" class="text-4xl text-slate-300" />
+        <div class="p-5">
+          <p class="text-[13px] text-iron mt-0 mb-4">Apunte la cámara directamente al código de barras del producto.</p>
+          <div class="relative w-full h-64 bg-carbon rounded-image overflow-hidden flex items-center justify-center">
+            <video #scannerVideo class="w-full h-full object-cover" playsinline muted></video>
+            <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 border-t border-caution animate-pulse"></div>
           </div>
+          <button type="button" (click)="stopCameraScanner()" class="btn-pill-ghost w-full mt-5">
+            Cancelar escaneo
+          </button>
+        </div>
+      </div>
+    </div>
 
-          <!-- Controls -->
-          <div class="flex flex-col gap-3">
-            <p class="text-xs text-[#4A7FA7] font-medium leading-relaxed max-w-md">
-              La imagen se optimiza y comprime automáticamente antes de guardarse en el sistema.
-            </p>
-            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-xs font-bold rounded-xl transition-all shadow-sm w-fit">
-              <ng-icon name="heroArrowUpTray" class="text-base" />
-              <span>Seleccionar imagen</span>
+    <!-- Notices -->
+    <div class="space-y-3 mb-10" *ngIf="successMessage() || cameraError() || error()">
+      <div *ngIf="successMessage()" class="notice notice-muted">
+        <ng-icon name="heroCheck" class="text-base shrink-0 mt-0.5" />
+        <span>{{ successMessage() }}</span>
+      </div>
+      <div *ngIf="cameraError()" class="notice">
+        <ng-icon name="heroExclamationTriangle" class="text-base shrink-0 mt-0.5" />
+        <span>{{ cameraError() }}</span>
+      </div>
+      <div *ngIf="error()" class="notice">
+        <ng-icon name="heroExclamationTriangle" class="text-base shrink-0 mt-0.5" />
+        <span>{{ error() }}</span>
+      </div>
+    </div>
+
+    <!-- Spec sheet: ruled sections -->
+    <div class="ruled grid-cols-1">
+
+      <!-- 01 Basic info -->
+      <section class="grid grid-cols-1 lg:grid-cols-[240px_1fr]">
+        <div class="p-6 lg:border-r border-b lg:border-b-0 border-concrete">
+          <span class="eyebrow">01</span>
+          <h2 class="panel-title mt-2">Información básica</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="md:col-span-2">
+            <label class="field-label" for="name">Nombre del producto *</label>
+            <input id="name" type="text" formControlName="name" class="field"
+              [class.field-invalid]="form.get('name')?.touched && form.get('name')?.invalid"
+              placeholder="Ej. Laptop HP Pavilion 15" />
+          </div>
+          <div>
+            <label class="field-label" for="brand">Marca *</label>
+            <input id="brand" type="text" formControlName="brand" class="field"
+              [class.field-invalid]="form.get('brand')?.touched && form.get('brand')?.invalid"
+              placeholder="Ej. HP, Samsung, Apple" />
+          </div>
+          <div>
+            <label class="field-label" for="model">Modelo</label>
+            <input id="model" type="text" formControlName="model" class="field" placeholder="Ej. Pavilion 15-eg2xxx" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="field-label" for="serial">Código de barras / N° serie</label>
+            <input id="serial" type="text" formControlName="serialNumber" class="field tnum uppercase" placeholder="Código único o serie" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="field-label" for="description">Descripción</label>
+            <textarea id="description" formControlName="description" rows="3" class="field resize-none"
+              placeholder="Descripción breve del producto…"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 Image -->
+      <section class="grid grid-cols-1 lg:grid-cols-[240px_1fr]">
+        <div class="p-6 lg:border-r border-b lg:border-b-0 border-concrete">
+          <span class="eyebrow">02</span>
+          <h2 class="panel-title mt-2">Imagen del producto</h2>
+        </div>
+        <div class="p-6 flex flex-col sm:flex-row gap-6 items-start">
+          <div class="w-40 h-40 bg-paper border border-concrete rounded-image flex items-center justify-center shrink-0 overflow-hidden">
+            <span *ngIf="imageLoading()" class="loader text-carbon"></span>
+            <img *ngIf="imagePreview && !imageLoading()" [src]="imagePreview" alt="Vista previa" class="w-full h-full object-cover" />
+            <ng-icon *ngIf="!imagePreview && !imageLoading()" name="heroPhoto" class="text-4xl text-concrete" />
+          </div>
+          <div class="flex flex-col gap-4">
+            <p class="text-[13px] text-iron m-0 max-w-sm">La imagen se optimiza y comprime automáticamente antes de guardarse.</p>
+            <label class="btn-pill-ghost btn-pill-sm w-fit">
+              <ng-icon name="heroArrowUpTray" class="text-xs" />
+              Seleccionar imagen
               <input type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)" />
             </label>
-            <button *ngIf="imagePreview" type="button"
-              class="inline-flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 font-bold w-fit"
-              (click)="removeImage()">
-              <ng-icon name="heroXMark" class="text-sm" />
-              <span>Eliminar imagen</span>
+            <button *ngIf="imagePreview" type="button" class="link-underline w-fit" (click)="removeImage()">
+              Eliminar imagen
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Categorization Card -->
-    <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Categorización</h2>
-      </div>
-      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-
-        <div>
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Categoría</label>
-          <select formControlName="categoryId"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm bg-white text-[#0A1931] font-medium focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20"
-            (change)="onCategoryChange($any($event.target).value)">
-            <option value="">— Seleccionar categoría —</option>
-            <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
-          </select>
+      <!-- 03 Categorization -->
+      <section class="grid grid-cols-1 lg:grid-cols-[240px_1fr]">
+        <div class="p-6 lg:border-r border-b lg:border-b-0 border-concrete">
+          <span class="eyebrow">03</span>
+          <h2 class="panel-title mt-2">Categorización</h2>
         </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Subcategoría</label>
-          <select formControlName="subcategoryId"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm bg-white text-[#0A1931] font-medium focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20 disabled:opacity-50"
-            [disabled]="!subcategories().length">
-            <option value="">— Seleccionar subcategoría —</option>
-            <option *ngFor="let s of subcategories()" [value]="s.id">{{ s.name }}</option>
-          </select>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Pricing & Stock Card -->
-    <div class="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <h2 class="text-xs font-bold text-[#0A1931] uppercase tracking-wider">Precios y Stock</h2>
-      </div>
-      <div class="p-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-          <!-- Purchase Price -->
-          <div *ngIf="!authSvc.isVendedor()">
-            <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">P. Compra *</label>
-            <input type="number" formControlName="purchasePrice" min="0" step="0.01"
-              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
-          </div>
-
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">P. Venta *</label>
-            <input type="number" formControlName="salePrice" min="0" step="0.01"
-              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
+            <label class="field-label">Categoría</label>
+            <select formControlName="categoryId" class="field" (change)="onCategoryChange($any($event.target).value)">
+              <option value="">— Seleccionar categoría —</option>
+              <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+            </select>
           </div>
-
           <div>
-            <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Stock Actual</label>
-            <input type="number" formControlName="stock" min="0"
-              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
+            <label class="field-label">Subcategoría</label>
+            <select formControlName="subcategoryId" class="field" [disabled]="!subcategories().length">
+              <option value="">— Seleccionar subcategoría —</option>
+              <option *ngFor="let s of subcategories()" [value]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 Pricing & stock -->
+      <section class="grid grid-cols-1 lg:grid-cols-[240px_1fr]">
+        <div class="p-6 lg:border-r border-b lg:border-b-0 border-concrete">
+          <span class="eyebrow">04</span>
+          <h2 class="panel-title mt-2">Precios y stock</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div *ngIf="!authSvc.isVendedor()">
+              <label class="field-label">P. compra ($) *</label>
+              <input type="number" formControlName="purchasePrice" min="0" step="0.01" placeholder="0.00" class="field tnum" />
+            </div>
+            <div>
+              <label class="field-label">P. venta ($) *</label>
+              <input type="number" formControlName="salePrice" min="0" step="0.01" placeholder="0.00" class="field tnum" />
+            </div>
+            <div>
+              <label class="field-label">Stock actual</label>
+              <input type="number" formControlName="stock" min="0" class="field tnum" />
+            </div>
+            <div>
+              <label class="field-label">Stock mínimo</label>
+              <input type="number" formControlName="minStock" min="0" class="field tnum" />
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-bold text-[#0A1931] uppercase tracking-wider mb-2">Stock Mínimo</label>
-            <input type="number" formControlName="minStock" min="0"
-              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-mono font-bold text-[#0A1931] focus:outline-none focus:border-[#1A3D63] focus:ring-2 focus:ring-[#1A3D63]/20" />
-          </div>
-
+          <label for="isActive" class="mt-6 inline-flex items-center gap-3 cursor-pointer text-label-sm uppercase">
+            <input type="checkbox" id="isActive" formControlName="isActive"
+              class="w-4 h-4 rounded-full border-carbon text-carbon focus:ring-0 focus:ring-offset-0" />
+            Producto activo en catálogo
+          </label>
         </div>
-
-        <div class="mt-5 flex items-center gap-2.5">
-          <input type="checkbox" id="isActive" formControlName="isActive"
-            class="w-4 h-4 text-[#1A3D63] border-slate-300 rounded focus:ring-[#1A3D63]" />
-          <label for="isActive" class="text-xs font-bold text-[#0A1931] uppercase tracking-wider cursor-pointer">Producto activo en catálogo</label>
-        </div>
-      </div>
+      </section>
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3 pt-2 pb-10">
-      <button type="button"
-        class="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#0A1931] border border-slate-300 bg-white rounded-xl hover:bg-slate-100 transition-all"
-        (click)="cancel()">Cancelar</button>
-      <button
-        type="submit"
-        class="flex items-center gap-2 px-6 py-2.5 bg-[#1A3D63] hover:bg-[#0A1931] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-[#1A3D63]/20 disabled:opacity-60 disabled:cursor-not-allowed"
-        [disabled]="form.invalid || saving()">
-        <span *ngIf="saving()" class="loading loading-spinner loading-xs text-[#B3CFE5]"></span>
-        <ng-icon *ngIf="!saving()" name="heroCheck" class="text-base" />
-        <span>{{ saving() ? 'Guardando...' : (isEdit ? 'Guardar Cambios' : 'Crear Producto') }}</span>
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-8 pb-4">
+      <button type="button" class="btn-pill-ghost" (click)="cancel()">Cancelar</button>
+      <button type="submit" class="btn-pill" [disabled]="form.invalid || saving()">
+        <span *ngIf="saving()" class="loader"></span>
+        <ng-icon *ngIf="!saving()" name="heroCheck" class="text-sm" />
+        {{ saving() ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Crear producto') }}
       </button>
     </div>
 
   </form>
 </div>
-
-

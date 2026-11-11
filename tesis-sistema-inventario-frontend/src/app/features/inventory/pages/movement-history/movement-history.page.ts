@@ -16,9 +16,9 @@ export class MovementHistoryPage implements OnInit {
   readonly loading   = signal(true);
 
   readonly typeLabels: Record<string, { label: string; class: string }> = {
-    IN:         { label: 'Entrada',  class: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    OUT:        { label: 'Salida',   class: 'text-rose-700 bg-rose-50 border-rose-200'   },
-    ADJUSTMENT: { label: 'Ajuste',   class: 'text-amber-700 bg-amber-50 border-amber-200' },
+    IN:         { label: 'Entrada',  class: 'badge-pill-solid' },
+    OUT:        { label: 'Salida',   class: '' },
+    ADJUSTMENT: { label: 'Ajuste',   class: 'badge-pill-muted' },
   };
 
   constructor(private readonly inventorySvc: InventoryService) {}
