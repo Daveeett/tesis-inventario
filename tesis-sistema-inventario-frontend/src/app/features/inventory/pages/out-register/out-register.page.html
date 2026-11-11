@@ -31,12 +31,12 @@
     </div>
     <div class="panel-body grid grid-cols-1 md:grid-cols-3 gap-5">
       <div>
-        <label class="field-label">Fecha de salida *</label>
-        <input type="date" [(ngModel)]="exitDate" class="field tnum" />
+        <label class="field-label" for="exitDate">Fecha de salida *</label>
+        <input id="exitDate" type="date" [(ngModel)]="exitDate" class="field tnum" />
       </div>
       <div>
-        <label class="field-label">Motivo de salida *</label>
-        <select [(ngModel)]="reason" class="field">
+        <label class="field-label" for="reason">Motivo de salida *</label>
+        <select id="reason" [(ngModel)]="reason" class="field">
           <option value="Venta">Venta a cliente</option>
           <option value="Producto Dañado">Producto dañado / averiado</option>
           <option value="Consumo Interno">Consumo interno / muestra</option>
@@ -45,8 +45,8 @@
         </select>
       </div>
       <div>
-        <label class="field-label">Cliente / Solicitante (opcional)</label>
-        <input type="text" [(ngModel)]="customerName" placeholder="Ej. Juan Pérez / Depto. técnico" class="field" />
+        <label class="field-label" for="customerName">Cliente / Solicitante (opcional)</label>
+        <input id="customerName" type="text" [(ngModel)]="customerName" placeholder="Ej. Juan Pérez / Depto. técnico" class="field" />
       </div>
     </div>
   </div>
@@ -58,15 +58,15 @@
     <div class="lg:col-span-5 flex flex-col">
       <div class="panel-head">
         <h3 class="panel-title">Seleccionar producto</h3>
-        <span class="text-label uppercase text-ash tnum">{{ products().length }} disponibles</span>
+        <span class="text-label uppercase text-ash tnum">Hasta {{ products().length }} resultados; escriba para filtrar</span>
       </div>
 
       <div class="p-5 space-y-3 border-b border-concrete">
         <div class="relative">
           <ng-icon name="heroMagnifyingGlass" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash text-base" />
-          <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por nombre, marca o código…" class="field pl-10" />
+          <input type="text" aria-label="Buscar producto para la salida" [(ngModel)]="searchTerm" (ngModelChange)="loadProducts()" placeholder="Buscar por nombre, marca o código…" class="field pl-10" />
         </div>
-        <select [(ngModel)]="selectedProductId" (change)="onSelectProduct()" class="field">
+        <select aria-label="Seleccionar producto para la salida" [(ngModel)]="selectedProductId" (change)="onSelectProduct()" class="field">
           <option value="">— Selección rápida de lista —</option>
           <option *ngFor="let p of filteredProducts()" [value]="p.id" [disabled]="p.stock <= 0">
             {{ p.name }} (Stock: {{ p.stock }}) - $ {{ p.salePrice | number:'1.2-2' }}
@@ -133,6 +133,7 @@
                 <div class="flex items-center justify-center gap-1">
                   <button (click)="updateQuantity(i, item.quantity - 1)" class="btn-round border-concrete">−</button>
                   <input type="number" min="1" [max]="item.product.stock" [ngModel]="item.quantity"
+                    [attr.aria-label]="'Cantidad de salida de ' + item.product.name"
                     (ngModelChange)="updateQuantity(i, $event)"
                     class="w-12 text-center border-0 border-b border-carbon bg-transparent px-0 py-1 text-[14px] tnum focus:ring-0 focus:outline-none" />
                   <button (click)="updateQuantity(i, item.quantity + 1)" class="btn-round border-concrete">+</button>

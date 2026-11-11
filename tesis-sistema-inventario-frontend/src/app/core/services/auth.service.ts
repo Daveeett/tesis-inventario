@@ -61,6 +61,10 @@ export class AuthService {
     this.userSignal.set(null);
   }
 
+  revokeSession() {
+    return this.http.post<ApiResponse<null>>(`${environment.apiBaseUrl}/auth/logout`, {});
+  }
+
   private loadUser(): AuthUser | null {
     if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem(this.USER_KEY);

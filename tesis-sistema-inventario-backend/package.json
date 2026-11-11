@@ -8,7 +8,9 @@
     "dev": "nodemon src/server.ts",
     "seed:prod": "ts-node src/scripts/seed-products.ts",
     "build:local": "tsc",
-    "seed:1000": "node src/scripts/crear-base-1000.js"
+    "seed:1000": "node src/scripts/crear-base-1000.js",
+    "admin:crear": "ts-node src/scripts/create-admin.ts",
+    "admin:restablecer": "ts-node src/scripts/reset-admin-password.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,7 +31,7 @@
     "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.28",
     "uuid": "^11.1.0",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -2,6 +2,8 @@ import * as express_1 from "express";
 import * as category_controller_1 from "../controllers/category.controller";
 import * as validate_middleware_1 from "../middlewares/validate.middleware";
 import * as category_dto_1 from "../dtos/category.dto";
+import { allowRoles } from "../middlewares/auth.middleware";
+import { UserRole } from "../entities/enums/user-role.enum";
 export const categoryRoutes = express_1.Router();
 /**
  * @openapi
@@ -59,7 +61,7 @@ exports.categoryRoutes.get("/:id", category_controller_1.CategoryController.getB
  *       201:
  *         description: Categoría creada
  */
-exports.categoryRoutes.post("/", validate_middleware_1.validate(category_dto_1.createCategorySchema), category_controller_1.CategoryController.create);
+exports.categoryRoutes.post("/", allowRoles(UserRole.ADMIN), validate_middleware_1.validate(category_dto_1.createCategorySchema), category_controller_1.CategoryController.create);
 
 /**
  * @openapi
@@ -86,7 +88,7 @@ exports.categoryRoutes.post("/", validate_middleware_1.validate(category_dto_1.c
  *       200:
  *         description: Categoría actualizada
  */
-exports.categoryRoutes.put("/:id", validate_middleware_1.validate(category_dto_1.updateCategorySchema), category_controller_1.CategoryController.update);
+exports.categoryRoutes.put("/:id", allowRoles(UserRole.ADMIN), validate_middleware_1.validate(category_dto_1.updateCategorySchema), category_controller_1.CategoryController.update);
 
 /**
  * @openapi
@@ -104,4 +106,4 @@ exports.categoryRoutes.put("/:id", validate_middleware_1.validate(category_dto_1
  *       200:
  *         description: Categoría eliminada
  */
-exports.categoryRoutes.delete("/:id", category_controller_1.CategoryController.delete);
+exports.categoryRoutes.delete("/:id", allowRoles(UserRole.ADMIN), category_controller_1.CategoryController.delete);

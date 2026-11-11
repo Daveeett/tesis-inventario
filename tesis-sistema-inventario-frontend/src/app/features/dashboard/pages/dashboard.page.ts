@@ -22,6 +22,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   @ViewChild('movementCanvas') movementCanvas!: ElementRef<HTMLCanvasElement>;
 
   readonly lowStockProducts    = signal<Product[]>([]);
+  readonly lowStockCount       = signal<number>(0);
   readonly totalProducts       = signal<number>(0);
   readonly totalInventoryValue  = signal<number>(0);
   readonly totalCategories     = signal<number>(0);
@@ -54,21 +55,20 @@ export class DashboardPage implements OnInit, OnDestroy {
   private loadData() {
     this.loading.set(true);
     forkJoin({
-      productsRes: this.productSvc.getAll(),
+      productsRes: this.productSvc.getSummary(),
       movementsRes: this.inventorySvc.getMovements(),
       categoriesRes: this.categorySvc.getCategories()
     }).subscribe({
       next: ({ productsRes, movementsRes, categoriesRes }) => {
-        const products = productsRes.data || [];
+        const summary = productsRes.data;
         const movements = movementsRes.data || [];
         const categories = categoriesRes.data || [];
 
         // 1. KPIs
-        this.totalProducts.set(products.length);
-        this.lowStockProducts.set(products.filter((p) => p.stock <= p.minStock && p.isActive));
-        
-        const totalValue = products.reduce((sum, p) => sum + ((p.stock || 0) * (p.purchasePrice || p.salePrice || 0)), 0);
-        this.totalInventoryValue.set(totalValue);
+        this.totalProducts.set(summary.total);
+        this.lowStockProducts.set(summary.lowStock);
+        this.lowStockCount.set(summary.lowStockCount);
+        this.totalInventoryValue.set(summary.value);
 
         this.recentMovements.set(movements.slice(0, 5));
 
@@ -79,10 +79,7 @@ export class DashboardPage implements OnInit, OnDestroy {
         const catMap = new Map<string, number>();
         categories.forEach((c) => catMap.set(c.name, 0));
 
-        products.forEach((p) => {
-          const catName = p.subcategory?.category?.name || 'General';
-          catMap.set(catName, (catMap.get(catName) || 0) + 1);
-        });
+        summary.categories.forEach((category) => catMap.set(category.name, category.total));
 
         this.loading.set(false);
 

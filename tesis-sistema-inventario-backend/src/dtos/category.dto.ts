@@ -2,7 +2,7 @@ import * as zod_1 from "zod";
 /** Schema para crear una categoría */
 export const createCategorySchema = zod_1.z.object({
     name: zod_1.z
-        .string({ required_error: "El nombre es obligatorio" })
+        .string({ error: "El nombre es obligatorio" })
         .min(2, "El nombre debe tener al menos 2 caracteres")
         .max(100, "El nombre no puede exceder 100 caracteres")
         .trim(),

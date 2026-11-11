@@ -43,6 +43,10 @@ export class ProductService {
     return this.http.get<ApiResponse<Product[]>>(this.base);
   }
 
+  getSummary(): Observable<ApiResponse<{total: number; lowStockCount: number; value: number; categories: {name: string; total: number}[]; lowStock: Product[]}>> {
+    return this.http.get<ApiResponse<{total: number; lowStockCount: number; value: number; categories: {name: string; total: number}[]; lowStock: Product[]}>>(`${this.base}/summary`);
+  }
+
   /** Lookup product details by barcode in internet/API */
   lookupBarcode(barcode: string): Observable<ApiResponse<BarcodeLookupInfo>> {
     return this.http.get<ApiResponse<BarcodeLookupInfo>>(`${this.base}/barcode-lookup/${encodeURIComponent(barcode)}`);

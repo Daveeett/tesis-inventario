@@ -59,7 +59,7 @@
                 </div>
                 <select [(ngModel)]="item.productId" (ngModelChange)="onProductSelect(i)" class="field"
                   [attr.aria-label]="'Producto de la fila ' + (i + 1)">
-                  <option value="">— Seleccionar producto ({{ filteredProducts(item).length }}) —</option>
+                  <option value="">— Seleccionar producto (hasta 30 resultados; escriba para filtrar) —</option>
                   <option *ngFor="let p of filteredProducts(item)" [value]="p.id">
                     {{ p.name }} ({{ p.brand }})
                   </option>

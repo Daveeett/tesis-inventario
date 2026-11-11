@@ -3,10 +3,10 @@ import { InventoryController } from "../controllers/inventory.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { createMovementSchema, quickRegisterSchema } from "../dtos/inventory.dto";
 import { quickExitSchema } from "../dtos/inventory.dto";
-import { requireAuth } from "../middlewares/auth.middleware";
+import { UserRole } from "../entities/enums/user-role.enum";
+import { MovementType } from "../entities/enums/movement-type.enum";
 
 export const inventoryRoutes = Router();
-inventoryRoutes.use(requireAuth);
 
 /**
  * @openapi
@@ -31,7 +31,11 @@ inventoryRoutes.get("/movements", InventoryController.getAll);
  *     summary: Registrar un nuevo movimiento de inventario (IN/OUT)
  *     tags: [Inventory]
  */
-inventoryRoutes.post("/movements", validate(createMovementSchema), InventoryController.createMovement);
+inventoryRoutes.post("/movements", validate(createMovementSchema), (req, res, next) => {
+  if (req.body.type === MovementType.ADJUSTMENT && req.auth?.role !== UserRole.ADMIN)
+    return res.status(403).json({ success: false, message: "Solo un administrador puede ajustar el stock" });
+  next();
+}, InventoryController.createMovement);
 
 /**
  * @openapi

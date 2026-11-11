@@ -35,7 +35,8 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ success: false, message: "Sesión caducada. Has iniciado sesión en otro lado." });
     }
 
-    req.auth = decoded;
+    // Los permisos siempre provienen de la base, no de un rol posiblemente obsoleto en el token.
+    req.auth = { ...decoded, role: user.role };
     next();
   } catch (err) {
     return res.status(401).json({ success: false, message: "Token inválido o expirado" });

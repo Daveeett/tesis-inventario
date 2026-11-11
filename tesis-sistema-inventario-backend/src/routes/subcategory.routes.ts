@@ -2,6 +2,8 @@ import * as express_1 from "express";
 import * as subcategory_controller_1 from "../controllers/subcategory.controller";
 import * as validate_middleware_1 from "../middlewares/validate.middleware";
 import * as subcategory_dto_1 from "../dtos/subcategory.dto";
+import { allowRoles } from "../middlewares/auth.middleware";
+import { UserRole } from "../entities/enums/user-role.enum";
 export const subcategoryRoutes = express_1.Router();
 /**
  * @openapi
@@ -68,7 +70,7 @@ exports.subcategoryRoutes.get("/:id", subcategory_controller_1.SubcategoryContro
  *       201:
  *         description: Creado
  */
-exports.subcategoryRoutes.post("/", validate_middleware_1.validate(subcategory_dto_1.createSubcategorySchema), subcategory_controller_1.SubcategoryController.create);
+exports.subcategoryRoutes.post("/", allowRoles(UserRole.ADMIN), validate_middleware_1.validate(subcategory_dto_1.createSubcategorySchema), subcategory_controller_1.SubcategoryController.create);
 
 /**
  * @openapi
@@ -86,7 +88,7 @@ exports.subcategoryRoutes.post("/", validate_middleware_1.validate(subcategory_d
  *       200:
  *         description: Actualizado
  */
-exports.subcategoryRoutes.put("/:id", validate_middleware_1.validate(subcategory_dto_1.updateSubcategorySchema), subcategory_controller_1.SubcategoryController.update);
+exports.subcategoryRoutes.put("/:id", allowRoles(UserRole.ADMIN), validate_middleware_1.validate(subcategory_dto_1.updateSubcategorySchema), subcategory_controller_1.SubcategoryController.update);
 
 /**
  * @openapi
@@ -104,4 +106,4 @@ exports.subcategoryRoutes.put("/:id", validate_middleware_1.validate(subcategory
  *       200:
  *         description: Eliminado
  */
-exports.subcategoryRoutes.delete("/:id", subcategory_controller_1.SubcategoryController.delete);
+exports.subcategoryRoutes.delete("/:id", allowRoles(UserRole.ADMIN), subcategory_controller_1.SubcategoryController.delete);

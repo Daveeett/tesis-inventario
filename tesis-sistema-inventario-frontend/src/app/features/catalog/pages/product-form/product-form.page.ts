@@ -344,8 +344,29 @@ export class ProductFormPage implements OnInit, OnDestroy {
     return Object.keys(obj).length ? obj : null;
   }
 
+  /** True when the control was touched and is invalid, so its error text should be shown. */
+  hasError(name: string): boolean {
+    const c = this.form.get(name);
+    return !!c && c.invalid && (c.touched || c.dirty);
+  }
+
+  /** Plain-language error for a control, shown under the field. */
+  errorText(name: string): string {
+    const errors = this.form.get(name)?.errors;
+    if (!errors) return '';
+    if (errors['required']) return 'Este campo es obligatorio.';
+    if (errors['min']) return 'El valor no puede ser negativo.';
+    if (errors['maxlength']) return `Máximo ${errors['maxlength'].requiredLength} caracteres.`;
+    return 'Valor no válido.';
+  }
+
   save() {
-    if (this.form.invalid || this.saving()) return;
+    if (this.saving()) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.error.set('Faltan datos obligatorios o hay valores no válidos. Revise los campos marcados.');
+      return;
+    }
     this.saving.set(true);
     this.error.set('');
 
@@ -366,8 +387,9 @@ export class ProductFormPage implements OnInit, OnDestroy {
       imageBase64:    this.imageBase64,
     };
 
+    const { stock: _stock, ...updatePayload } = payload;
     const req$ = this.isEdit && this.productId
-      ? this.productSvc.update(this.productId, payload)
+      ? this.productSvc.update(this.productId, updatePayload)
       : this.productSvc.create(payload);
 
     req$.subscribe({

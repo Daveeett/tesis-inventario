@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { NgIconComponent } from '@ng-icons/core';
 import { ProductService } from '../../../../core/services/product.service';
 import { InventoryService } from '../../../../core/services/inventory.service';
 import { Product } from '../../../../core/models/api.models';
+import { Subject, debounceTime, switchMap, takeUntil } from 'rxjs';
 
 export interface CartItem {
   product: Product;
@@ -18,7 +19,7 @@ export interface CartItem {
   imports: [CommonModule, FormsModule, RouterLink, NgIconComponent],
   templateUrl: './out-register.page.html',
 })
-export class OutRegisterPage implements OnInit {
+export class OutRegisterPage implements OnInit, OnDestroy {
   readonly products     = signal<Product[]>([]);
   readonly loading      = signal(true);
   readonly saving       = signal(false);
@@ -32,6 +33,8 @@ export class OutRegisterPage implements OnInit {
 
   // Product Selection & Search
   searchTerm = '';
+  private readonly searches = new Subject<string>();
+  private readonly destroyed = new Subject<void>();
   selectedProductId = '';
 
   // Exit Cart
@@ -51,32 +54,22 @@ export class OutRegisterPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.searches.pipe(debounceTime(250), switchMap(search => this.productSvc.search({ page: 1, limit: 30, search: search || undefined, isActive: true, sortBy: 'name', sortOrder: 'ASC' })), takeUntil(this.destroyed)).subscribe({
+      next: res => { this.products.set(res.data); this.loading.set(false); },
+      error: (err: Error) => { this.error.set(err.message); this.loading.set(false); },
+    });
     this.loadProducts();
   }
 
+  ngOnDestroy() { this.destroyed.next(); this.destroyed.complete(); }
+
   loadProducts() {
     this.loading.set(true);
-    this.productSvc.getAll().subscribe({
-      next: (res) => {
-        this.products.set(res.data);
-        this.loading.set(false);
-      },
-      error: (err: Error) => {
-        this.error.set(err.message);
-        this.loading.set(false);
-      },
-    });
+    this.searches.next(this.searchTerm);
   }
 
   filteredProducts(): Product[] {
-    const term = this.searchTerm.trim().toLowerCase();
-    if (!term) return this.products();
-    return this.products().filter(
-      (p) =>
-        p.name.toLowerCase().includes(term) ||
-        p.brand.toLowerCase().includes(term) ||
-        (p.serialNumber && p.serialNumber.toLowerCase().includes(term))
-    );
+    return this.products();
   }
 
   addToCart(product: Product) {

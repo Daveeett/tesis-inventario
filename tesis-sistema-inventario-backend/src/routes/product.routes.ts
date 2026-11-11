@@ -2,8 +2,11 @@ import { Router } from "express";
 import { ProductController } from "../controllers/product.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { productQuerySchema, createProductSchema, updateProductSchema } from "../dtos/product.dto";
+import { allowRoles } from "../middlewares/auth.middleware";
+import { UserRole } from "../entities/enums/user-role.enum";
 
 export const productRoutes = Router();
+productRoutes.get("/summary", ProductController.summary);
 
 /**
  * @openapi
@@ -46,7 +49,12 @@ productRoutes.get("/brands", ProductController.getBrands);
  *     summary: Obtener todos los productos
  *     tags: [Products]
  */
-productRoutes.get("/", ProductController.getAll);
+// El listado ilimitado podía descargar el catálogo completo con imágenes.
+// Obligar a los clientes a usar /search evita truncar silenciosamente los resultados.
+productRoutes.get("/", (_req, res) => res.status(410).json({
+    success: false,
+    message: "El listado completo ya no está disponible. Use /api/products/search con paginación.",
+}));
 
 /**
  * @openapi
@@ -64,7 +72,7 @@ productRoutes.get("/:id", ProductController.getById);
  *     summary: Crear un nuevo producto
  *     tags: [Products]
  */
-productRoutes.post("/", validate(createProductSchema), ProductController.create);
+productRoutes.post("/", allowRoles(UserRole.ADMIN), validate(createProductSchema), ProductController.create);
 
 /**
  * @openapi
@@ -73,7 +81,7 @@ productRoutes.post("/", validate(createProductSchema), ProductController.create)
  *     summary: Actualizar un producto existente
  *     tags: [Products]
  */
-productRoutes.put("/:id", validate(updateProductSchema), ProductController.update);
+productRoutes.put("/:id", allowRoles(UserRole.ADMIN), validate(updateProductSchema), ProductController.update);
 
 /**
  * @openapi
@@ -82,4 +90,4 @@ productRoutes.put("/:id", validate(updateProductSchema), ProductController.updat
  *     summary: Eliminar un producto
  *     tags: [Products]
  */
-productRoutes.delete("/:id", ProductController.delete);
+productRoutes.delete("/:id", allowRoles(UserRole.ADMIN), ProductController.delete);

@@ -2,12 +2,13 @@
  * Script alternativo para sembrar/agregar productos vía REST API en Vercel
  * 
  * Uso:
- *   node src/scripts/seed-via-api.js https://tu-backend-vercel.vercel.app david@admin.com david181218
+ *   Definir SEED_API_URL, SEED_ADMIN_EMAIL y SEED_ADMIN_PASSWORD como variables de entorno.
  */
 
-const API_URL = process.argv[2] || "http://localhost:3001";
-const ADMIN_EMAIL = process.argv[3] || "david@admin.com";
-const ADMIN_PASSWORD = process.argv[4] || "david181218";
+const API_URL = process.env.SEED_API_URL || "http://localhost:3001";
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) throw new Error("Configure las credenciales de siembra por variables de entorno.");
 
 const CATEGORIES_DATA = [
   {

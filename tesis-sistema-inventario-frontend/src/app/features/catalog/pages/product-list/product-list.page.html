@@ -19,6 +19,7 @@
       <ng-icon name="heroMagnifyingGlass" class="text-base text-ash shrink-0" />
       <input
         type="text"
+        aria-label="Buscar en el catálogo"
         [(ngModel)]="searchQuery"
         (ngModelChange)="triggerSearch()"
         placeholder="Buscar por nombre, marca, serie…"
@@ -27,6 +28,7 @@
     </div>
 
     <select
+      aria-label="Filtrar por marca"
       [(ngModel)]="selectedBrand"
       (ngModelChange)="triggerSearch()"
       class="border-0 bg-paper py-3.5 px-4 text-label-sm uppercase text-carbon focus:ring-0 focus:outline-none cursor-pointer"
@@ -36,6 +38,7 @@
     </select>
 
     <select
+      aria-label="Filtrar por categoría"
       [(ngModel)]="selectedCategoryId"
       (ngModelChange)="triggerSearch()"
       class="border-0 bg-paper py-3.5 px-4 text-label-sm uppercase text-carbon focus:ring-0 focus:outline-none cursor-pointer"
@@ -58,7 +61,46 @@
       <p class="text-[14px] text-iron max-w-md m-0">Ajuste los criterios de búsqueda o registre un nuevo artículo en el catálogo.</p>
     </div>
 
-    <div *ngIf="!loading() && products().length > 0" class="w-full overflow-x-auto">
+    <div *ngIf="!loading() && products().length > 0" class="w-full">
+
+      <!-- Mobile: one card per product, no horizontal scroll -->
+      <ul class="md:hidden list-none m-0 p-0">
+        <li *ngFor="let p of products()" class="flex gap-3 px-4 py-4 border-b border-concrete">
+          <div class="w-12 h-12 shrink-0 rounded-image overflow-hidden bg-paper border border-concrete flex items-center justify-center">
+            <img *ngIf="p.imageBase64" [src]="p.imageBase64" [alt]="p.name" class="w-full h-full object-cover" loading="lazy" />
+            <ng-icon *ngIf="!p.imageBase64" name="heroPhoto" class="text-concrete text-lg" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="leading-snug break-words">{{ p.name }}</div>
+            <div class="text-label uppercase text-ash mt-1 break-words">
+              {{ p.brand }}<span *ngIf="p.model"> / {{ p.model }}</span>
+            </div>
+            <div class="text-label uppercase text-ash mt-1 break-words">{{ p.subcategory?.category?.name }} › {{ p.subcategory?.name }}</div>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-[13px]">
+              <span class="tnum">Stock: {{ p.stock }}</span>
+              <span *ngIf="p.stock <= p.minStock" class="flex items-center gap-1.5 text-label-xs uppercase">
+                <span class="dot-caution"></span> Mínimo
+              </span>
+              <span class="tnum">$ {{ p.salePrice | number:'1.2-2' }}</span>
+              <span class="badge-pill" [ngClass]="p.isActive ? '' : 'badge-pill-muted'">
+                {{ p.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1 shrink-0">
+            <button class="btn-round" title="Editar" [attr.aria-label]="'Editar ' + p.name" (click)="edit(p.id)">
+              <ng-icon name="heroPencilSquare" class="text-base" />
+            </button>
+            <button class="btn-round" title="Eliminar" [attr.aria-label]="'Eliminar ' + p.name" [disabled]="deleting() === p.id" (click)="delete(p.id)">
+              <span *ngIf="deleting() === p.id" class="loader w-3.5 h-3.5"></span>
+              <ng-icon name="heroTrash" class="text-base" *ngIf="deleting() !== p.id" />
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Tablet and desktop: full table -->
+      <div class="hidden md:block overflow-x-auto">
       <table class="manifest">
         <thead>
           <tr>
@@ -115,6 +157,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t border-carbon">

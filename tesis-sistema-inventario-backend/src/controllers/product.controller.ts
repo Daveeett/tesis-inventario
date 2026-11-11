@@ -5,7 +5,7 @@ import { BarcodeService } from "../services/barcode.service";
 /** Helper para sanitizar el precio de compra si el rol es VENDEDOR */
 function sanitizeProductRole(product: any, role?: string) {
   if (!product) return product;
-  if (role === "VENDEDOR") {
+  if (role !== "ADMIN") {
     if (Array.isArray(product)) {
       return product.map((p) => {
         const { purchasePrice, ...rest } = p;
@@ -23,14 +23,17 @@ function sanitizeProductRole(product: any, role?: string) {
  * Includes search with pagination, barcode lookup and brand filter.
  */
 export const ProductController = {
+    async summary(req: Request, res: Response, next: NextFunction) {
+        try {
+            res.json({ success: true, data: await ProductService.summary(req.auth?.role === 'ADMIN') });
+        } catch (error) { next(error); }
+    },
     /** Búsqueda paginada con filtros */
     async search(req: Request, res: Response, next: NextFunction) {
         try {
             const query = (req as any).parsedQuery;
             const result = await ProductService.search(query);
-            if (req.auth?.role === "VENDEDOR" && result?.data) {
-                result.data = sanitizeProductRole(result.data, "VENDEDOR");
-            }
+            result.data = sanitizeProductRole(result.data, req.auth?.role);
             res.json({ success: true, ...result });
         }
         catch (error) {

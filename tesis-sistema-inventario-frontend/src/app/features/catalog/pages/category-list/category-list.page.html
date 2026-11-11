@@ -17,12 +17,12 @@
 
         <div class="space-y-5">
           <div>
-            <label class="field-label">Nombre *</label>
-            <input type="text" [(ngModel)]="catName" placeholder="Ej. Laptops y computación" class="field" />
+            <label class="field-label" for="catName">Nombre *</label>
+            <input id="catName" type="text" [(ngModel)]="catName" placeholder="Ej. Laptops y computación" class="field" />
           </div>
           <div>
-            <label class="field-label">Descripción</label>
-            <input type="text" [(ngModel)]="catDesc" placeholder="Descripción breve de la categoría" class="field" />
+            <label class="field-label" for="catDesc">Descripción</label>
+            <input id="catDesc" type="text" [(ngModel)]="catDesc" placeholder="Descripción breve de la categoría" class="field" />
           </div>
           <button class="btn-pill" [disabled]="!catName.trim() || savingCat" (click)="addCategory()">
             <span *ngIf="savingCat" class="loader"></span>
@@ -66,19 +66,19 @@
 
         <div class="space-y-5">
           <div>
-            <label class="field-label">Categoría padre *</label>
-            <select [(ngModel)]="subCategoryId" class="field">
+            <label class="field-label" for="subCategoryId">Categoría padre *</label>
+            <select id="subCategoryId" [(ngModel)]="subCategoryId" class="field">
               <option value="">— Seleccionar categoría padre —</option>
               <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="field-label">Nombre subcategoría *</label>
-            <input type="text" [(ngModel)]="subName" placeholder="Ej. Laptops gamer" class="field" />
+            <label class="field-label" for="subName">Nombre subcategoría *</label>
+            <input id="subName" type="text" [(ngModel)]="subName" placeholder="Ej. Laptops gamer" class="field" />
           </div>
           <div>
-            <label class="field-label">Descripción</label>
-            <input type="text" [(ngModel)]="subDesc" placeholder="Descripción (opcional)" class="field" />
+            <label class="field-label" for="subDesc">Descripción</label>
+            <input id="subDesc" type="text" [(ngModel)]="subDesc" placeholder="Descripción (opcional)" class="field" />
           </div>
           <button class="btn-pill-ghost" [disabled]="!subName.trim() || !subCategoryId || savingSub" (click)="addSubcategory()">
             <span *ngIf="savingSub" class="loader"></span>

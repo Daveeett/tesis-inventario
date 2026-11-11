@@ -14,8 +14,8 @@ import { requireAuth } from "../middlewares/auth.middleware";
 const authService = new AuthService();
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email().max(180),
+  password: z.string().min(1).refine(value => Buffer.byteLength(value, 'utf8') <= 72, 'Contraseña demasiado larga'),
 });
 
 const authLimiter = rateLimit({
@@ -47,10 +47,10 @@ export const authRoutes = Router();
  *             properties:
  *               email:
  *                 type: string
- *                 example: david@admin.com
+ *                 example: administrador@example.com
  *               password:
  *                 type: string
- *                 example: david181218
+ *                 example: contraseña
  *     responses:
  *       200:
  *         description: Login exitoso, retorna el JWT token
@@ -60,7 +60,7 @@ export const authRoutes = Router();
 authRoutes.post("/login", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
-    const ip = (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
+    const ip = req.ip || "unknown";
     const result = await authService.login(email, password, ip);
     res.status(200).json({ success: true, message: "Login exitoso", data: result });
   } catch (err) {
@@ -81,7 +81,7 @@ authRoutes.post("/login", authLimiter, async (req: Request, res: Response, next:
 authRoutes.post("/logout", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.auth!.userId;
-    await authService.revokeSession(userId);
+    await authService.revokeSession(userId, req.auth!.sessionToken);
     res.status(200).json({ success: true, message: "Sesión cerrada", data: null });
   } catch (err) {
     next(err);

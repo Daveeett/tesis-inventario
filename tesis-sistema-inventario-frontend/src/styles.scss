@@ -153,6 +153,10 @@
     @apply border-carbon border-dashed;
   }
 
+  .field-error {
+    @apply text-[12px] text-carbon mt-1.5 mb-0;
+  }
+
   .field-hint {
     @apply text-label uppercase text-carbon mt-2 flex items-center gap-1.5;
   }

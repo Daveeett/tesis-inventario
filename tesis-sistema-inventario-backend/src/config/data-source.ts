@@ -14,8 +14,8 @@ export const AppDataSource = new typeorm_1.DataSource(
         ? {
               type: "postgres",
               url: dbUrl,
-              ssl: environment_1.env.DB_SSL || dbUrl.includes("sslmode=require") ? { rejectUnauthorized: false } : false,
-              synchronize: true,
+              ssl: environment_1.env.DB_SSL || dbUrl.includes("sslmode=require") ? { rejectUnauthorized: true } : false,
+              synchronize: environment_1.env.NODE_ENV !== "production",
               logging: environment_1.env.NODE_ENV === "development",
               entities: [category_entity_1.Category, subcategory_entity_1.Subcategory, product_entity_1.Product, inventory_movement_entity_1.InventoryMovement, user_entity_1.User],
           }
@@ -26,8 +26,8 @@ export const AppDataSource = new typeorm_1.DataSource(
               username: environment_1.env.DB_USER,
               password: environment_1.env.DB_PASSWORD,
               database: environment_1.env.DB_DATABASE,
-              ssl: environment_1.env.DB_SSL ? { rejectUnauthorized: false } : false,
-              synchronize: true,
+              ssl: environment_1.env.DB_SSL ? { rejectUnauthorized: true } : false,
+              synchronize: environment_1.env.NODE_ENV !== "production",
               logging: environment_1.env.NODE_ENV === "development",
               entities: [category_entity_1.Category, subcategory_entity_1.Subcategory, product_entity_1.Product, inventory_movement_entity_1.InventoryMovement, user_entity_1.User],
           }

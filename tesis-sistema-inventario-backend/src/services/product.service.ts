@@ -7,20 +7,27 @@ const repo = () => data_source_1.AppDataSource.getRepository(product_entity_1.Pr
  * ignore tildes. Si la base no permite crearla, la búsqueda sigue funcionando
  * sin distinguir mayúsculas, aunque sí distinga tildes.
  */
-let unaccentReady: Promise<boolean> | null = null;
-const ensureUnaccent = () => {
-    if (!unaccentReady) {
-        unaccentReady = data_source_1.AppDataSource.query("CREATE EXTENSION IF NOT EXISTS unaccent")
-            .then(() => true)
+let searchIndexReady: Promise<boolean> | null = null;
+const hasSearchIndex = () => {
+    if (!searchIndexReady) {
+        searchIndexReady = data_source_1.AppDataSource.query("SELECT to_regprocedure('public.inventory_search_normalize(text)') IS NOT NULL AS available")
+            .then((rows) => rows[0].available === true)
             .catch(() => false);
     }
-    return unaccentReady;
+    return searchIndexReady;
 };
 /**
  * Service layer for Product CRUD operations and optimized search.
  * Designed to reduce manual registration time from 10 hours weekly.
  */
 export const ProductService = {
+    async summary(includePurchasePrice: boolean) {
+        const price = includePurchasePrice ? 'COALESCE(NULLIF(purchase_price, 0), sale_price)' : 'sale_price';
+        const [totals] = await data_source_1.AppDataSource.query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE is_active AND stock <= min_stock)::int AS "lowStockCount", COALESCE(SUM(stock * ${price}), 0)::float8 AS value FROM products`);
+        const categories = await data_source_1.AppDataSource.query(`SELECT COALESCE(c.name, 'General') AS name, COUNT(*)::int AS total FROM products p LEFT JOIN subcategories s ON p.subcategory_id = s.id LEFT JOIN categories c ON s.category_id = c.id GROUP BY c.name`);
+        const lowStock = await data_source_1.AppDataSource.query(`SELECT id, name, brand, model, stock, min_stock AS "minStock", sale_price::float8 AS "salePrice" FROM products WHERE is_active AND stock <= min_stock ORDER BY stock, name LIMIT 50`);
+        return { ...totals, categories, lowStock };
+    },
     /**
      * Búsqueda optimizada de productos con paginación y filtros.
      * Soporta búsqueda por nombre, marca, categoría y subcategoría.
@@ -34,11 +41,17 @@ export const ProductService = {
         // Filtro de búsqueda general (nombre, marca, modelo, serial)
         // Sin distinguir mayúsculas (ILIKE) y, si está disponible, sin distinguir tildes (unaccent)
         if (search) {
-            const ignoreAccents = await ensureUnaccent();
-            const condition = ["product.name", "product.brand", "product.model", "product.serial_number"]
-                .map((col) => ignoreAccents ? `unaccent(${col}) ILIKE unaccent(:search)` : `${col} ILIKE :search`)
-                .join(" OR ");
-            qb.andWhere(`(${condition})`, { search: `%${search}%` });
+            const indexed = await hasSearchIndex();
+            const words = search.trim().split(/\s+/).filter(Boolean).slice(0, 8);
+            words.forEach((word, index) => {
+                const param = `word${index}`;
+                const normalized = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const escaped = (indexed ? normalized : word).replace(/[\\%_]/g, "\\$&");
+                const condition = ["product.name", "product.brand", "product.model", "product.serial_number"]
+                    .map((col) => indexed ? `public.inventory_search_normalize(${col}) LIKE :${param}` : `${col} ILIKE :${param}`)
+                    .join(" OR ");
+                qb.andWhere(`(${condition})`, { [param]: `%${escaped}%` });
+            });
         }
         // Filtro por marca
         if (brand) {
@@ -116,7 +129,13 @@ export const ProductService = {
     /** Eliminar un producto por ID */
     async delete(id) {
         const product = await exports.ProductService.findById(id);
-        await repo().remove(product);
+        try {
+            await repo().remove(product);
+        } catch (error) {
+            if (error && ['23503', '23001'].includes(error.driverError?.code || error.code))
+                throw new error_middleware_1.AppError(409, 'El producto tiene movimientos y no se puede eliminar. Puede desactivarlo.');
+            throw error;
+        }
     },
     /** Obtener las marcas distintas disponibles (para filtro) */
     async getDistinctBrands() {

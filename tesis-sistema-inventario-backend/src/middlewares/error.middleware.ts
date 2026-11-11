@@ -1,3 +1,4 @@
+import { ZodError } from "zod";
 /**
  * Custom application error class with HTTP status code support.
  */
@@ -15,6 +16,10 @@ export { AppError };
  * Catches all errors and returns a standardized JSON response.
  */
 const errorHandler = (err, _req, res, _next) => {
+    if (err instanceof ZodError) {
+        res.status(400).json({ success: false, message: "Error de validación" });
+        return;
+    }
     if (err instanceof AppError) {
         res.status(err.statusCode).json({
             success: false,
@@ -22,7 +27,7 @@ const errorHandler = (err, _req, res, _next) => {
         });
         return;
     }
-    console.error("Unhandled error:", err);
+    console.error("Unhandled error:", process.env.NODE_ENV === "production" ? err?.name : err);
     res.status(500).json({
         success: false,
         message: "Error interno del servidor",

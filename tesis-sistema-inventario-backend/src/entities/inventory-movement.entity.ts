@@ -26,7 +26,7 @@ export class InventoryMovement extends BaseEntity {
 
     // Relación: Muchos movimientos pertenecen a un producto
     @ManyToOne(() => Product, (product) => product.movements, {
-        onDelete: "CASCADE",
+        onDelete: "RESTRICT",
     })
     @JoinColumn({ name: "product_id" })
     product: Product;

@@ -32,20 +32,6 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
-  fillDemoCredentials(role: 'admin' | 'seller'): void {
-    if (role === 'admin') {
-      this.form.patchValue({
-        email: 'vendedor@test.com',
-        password: 'password123',
-      });
-    } else {
-      this.form.patchValue({
-        email: 'vendedor@test.com',
-        password: 'password123',
-      });
-    }
-  }
-
   submit() {
     if (this.form.invalid || this.loading) return;
     this.loading = true;

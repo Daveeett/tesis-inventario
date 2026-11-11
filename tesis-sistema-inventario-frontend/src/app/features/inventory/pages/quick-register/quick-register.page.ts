@@ -14,13 +14,15 @@ interface QuickItem {
   currentStock: number;
   /** Texto escrito en el buscador de la fila */
   term: string;
+  options: Product[];
+  requestNumber: number;
 }
 
 /** Pasa a minúsculas y quita tildes para comparar sin distinguirlas */
 const normalize = (s: string | null | undefined) =>
   (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-const emptyItem = (): QuickItem => ({ productId: '', quantity: 1, productName: '', currentStock: 0, term: '' });
+const emptyItem = (): QuickItem => ({ productId: '', quantity: 1, productName: '', currentStock: 0, term: '', options: [], requestNumber: 0 });
 
 @Component({
   selector: 'app-quick-register-page',
@@ -44,15 +46,13 @@ export class QuickRegisterPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.productSvc.getAll().subscribe({
-      next: (res) => { this.products.set(res.data); this.loading.set(false); },
-      error: () => this.loading.set(false),
-    });
+    this.loading.set(false);
+    this.onSearch(0);
   }
 
   onProductSelect(index: number) {
     const item = this.items[index];
-    const product = this.products().find((p) => p.id === item.productId);
+    const product = item.options.find((p) => p.id === item.productId);
     if (product) {
       item.productName   = product.name;
       item.currentStock  = product.stock;
@@ -64,28 +64,30 @@ export class QuickRegisterPage implements OnInit {
    * sin distinguir mayúsculas ni tildes. El producto ya elegido se mantiene en la lista.
    */
   filteredProducts(item: QuickItem): Product[] {
-    const words = normalize(item.term).split(/\s+/).filter(Boolean);
-    if (words.length === 0) return this.products();
-    return this.products().filter((p) => {
-      if (p.id === item.productId) return true;
-      const text = normalize(`${p.name} ${p.brand} ${p.model ?? ''} ${p.serialNumber ?? ''}`);
-      return words.every((w) => text.includes(w));
-    });
+    return item.options;
   }
 
   /** Si la búsqueda deja un solo producto, se selecciona automáticamente */
   onSearch(index: number) {
     const item = this.items[index];
-    if (item.productId) return;
-    const matches = this.filteredProducts(item);
-    if (matches.length === 1) {
-      item.productId = matches[0].id;
-      this.onProductSelect(index);
-    }
+    item.productId = '';
+    const request = ++item.requestNumber;
+    setTimeout(() => {
+      if (request !== item.requestNumber) return;
+      this.productSvc.search({ page: 1, limit: 30, search: item.term || undefined, isActive: true, sortBy: 'name', sortOrder: 'ASC' }).subscribe({
+        next: (res) => {
+          if (request !== item.requestNumber) return;
+          item.options = res.data;
+          if (res.meta.total === 1) { const p = res.data[0]; item.productId = p.id; item.productName = p.name; item.currentStock = p.stock; }
+        },
+        error: (err: Error) => { this.error.set(err.message); },
+      });
+    }, 250);
   }
 
   addRow() {
     this.items.push(emptyItem());
+    this.onSearch(this.items.length - 1);
   }
 
   removeRow(i: number) {
@@ -93,8 +95,9 @@ export class QuickRegisterPage implements OnInit {
   }
 
   register() {
-    const validItems = this.items.filter((i) => i.productId && i.quantity > 0);
-    if (validItems.length === 0 || this.saving()) return;
+    const validItems = this.items.filter((i) => i.productId && Number.isInteger(i.quantity) && i.quantity > 0);
+    if (this.saving()) return;
+    if (validItems.length !== this.items.length) { this.error.set('Seleccione un producto y una cantidad válida en cada fila.'); return; }
 
     this.saving.set(true);
     this.error.set('');
@@ -109,7 +112,7 @@ export class QuickRegisterPage implements OnInit {
         this.success.set(`✅ ${(res.data as any[]).length} producto(s) registrado(s) exitosamente.`);
         this.items = [emptyItem()];
         // Refresh product list to show updated stocks
-        this.productSvc.getAll().subscribe((r) => this.products.set(r.data));
+        this.onSearch(0);
       },
       error: (err: Error) => { this.error.set(err.message); this.saving.set(false); },
     });

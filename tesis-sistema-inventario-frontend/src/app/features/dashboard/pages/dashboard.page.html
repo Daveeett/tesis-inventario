@@ -54,7 +54,7 @@
           <span *ngIf="lowStockProducts().length > 0" class="dot-caution"></span>
           Stock crítico
         </span>
-        <div class="text-display tnum mt-6">{{ lowStockProducts().length }}</div>
+        <div class="text-display tnum mt-6">{{ lowStockCount() }}</div>
         <span class="block text-label uppercase mt-3" [ngClass]="lowStockProducts().length > 0 ? 'text-paper/70' : 'text-ash'">
           {{ lowStockProducts().length > 0 ? 'Requieren reposición' : 'Stock óptimo' }}
         </span>
@@ -99,7 +99,7 @@
             Alertas de stock mínimo
           </h3>
           <span class="badge-pill" [ngClass]="lowStockProducts().length > 0 ? 'badge-pill-solid' : 'badge-pill-muted'">
-            {{ lowStockProducts().length }} críticas
+            {{ lowStockCount() }} críticas
           </span>
         </div>
 

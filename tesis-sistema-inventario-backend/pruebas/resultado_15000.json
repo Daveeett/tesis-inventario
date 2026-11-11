@@ -1,0 +1,148 @@
+{
+  "generatedAt": "2026-11-11T03:18:46.220Z",
+  "database": "innovatecno_prueba_1794367047404",
+  "products": 15000,
+  "search": "camara 1000",
+  "host": "PostgreSQL local; productos ficticios sin imágenes",
+  "environment": {
+    "cpu": "Intel(R) Core(TM) i3-10110U CPU @ 2.10GHz",
+    "logicalCores": 4,
+    "ramGiB": 7.8,
+    "node": "v24.18.0",
+    "postgres": "18.3",
+    "platform": "win32"
+  },
+  "method": "10 peticiones por usuario y repetición; tres repeticiones; limitador general desactivado solo en modo test; autenticación activa",
+  "security": {
+    "anonymousRead": 401,
+    "sellerWrite": 403,
+    "sellerPurchasePriceHidden": true,
+    "adminDirectStockUpdate": 400,
+    "sellerAdjustment": 403,
+    "rollbackInsufficientStock": 400,
+    "concurrentExits": [
+      201,
+      400
+    ],
+    "finalStock": 5,
+    "deletionWithHistory": 409,
+    "revokedSession": 401
+  },
+  "summaryMs": 71.73,
+  "results": [
+    {
+      "concurrency": 1,
+      "repetition": 1,
+      "requests": 10,
+      "seconds": 0.5,
+      "p50_ms": 51.19,
+      "p95_ms": 63.89,
+      "requests_per_second": 19.8,
+      "statuses": {
+        "200": 10
+      }
+    },
+    {
+      "concurrency": 1,
+      "repetition": 2,
+      "requests": 10,
+      "seconds": 0.5,
+      "p50_ms": 49.64,
+      "p95_ms": 63.55,
+      "requests_per_second": 20.1,
+      "statuses": {
+        "200": 10
+      }
+    },
+    {
+      "concurrency": 1,
+      "repetition": 3,
+      "requests": 10,
+      "seconds": 0.45,
+      "p50_ms": 46,
+      "p95_ms": 55.46,
+      "requests_per_second": 22.2,
+      "statuses": {
+        "200": 10
+      }
+    },
+    {
+      "concurrency": 10,
+      "repetition": 1,
+      "requests": 100,
+      "seconds": 2.29,
+      "p50_ms": 180.87,
+      "p95_ms": 695.47,
+      "requests_per_second": 43.6,
+      "statuses": {
+        "200": 100
+      }
+    },
+    {
+      "concurrency": 10,
+      "repetition": 2,
+      "requests": 100,
+      "seconds": 1.38,
+      "p50_ms": 135.6,
+      "p95_ms": 177.67,
+      "requests_per_second": 72.6,
+      "statuses": {
+        "200": 100
+      }
+    },
+    {
+      "concurrency": 10,
+      "repetition": 3,
+      "requests": 100,
+      "seconds": 1.22,
+      "p50_ms": 109.54,
+      "p95_ms": 203.12,
+      "requests_per_second": 82.2,
+      "statuses": {
+        "200": 100
+      }
+    },
+    {
+      "concurrency": 50,
+      "repetition": 1,
+      "requests": 500,
+      "seconds": 5.45,
+      "p50_ms": 526.44,
+      "p95_ms": 692.42,
+      "requests_per_second": 91.8,
+      "statuses": {
+        "200": 500
+      }
+    },
+    {
+      "concurrency": 50,
+      "repetition": 2,
+      "requests": 500,
+      "seconds": 5.24,
+      "p50_ms": 490.86,
+      "p95_ms": 738.73,
+      "requests_per_second": 95.3,
+      "statuses": {
+        "200": 500
+      }
+    },
+    {
+      "concurrency": 50,
+      "repetition": 3,
+      "requests": 500,
+      "seconds": 5.06,
+      "p50_ms": 480.06,
+      "p95_ms": 699.02,
+      "requests_per_second": 98.9,
+      "statuses": {
+        "200": 500
+      }
+    }
+  ],
+  "queryPlan": [
+    "Bitmap Heap Scan on products  (cost=1955.87..1960.38 rows=1 width=16)",
+    "  Recheck Cond: ((inventory_search_normalize((name)::text) ~~ '%camara%'::text) AND (inventory_search_normalize((name)::text) ~~ '%1000%'::text))",
+    "  ->  Bitmap Index Scan on products_search_name_trgm  (cost=0.00..1955.87 rows=1 width=0)",
+    "        Index Cond: ((inventory_search_normalize((name)::text) ~~ '%camara%'::text) AND (inventory_search_normalize((name)::text) ~~ '%1000%'::text))"
+  ]
+}

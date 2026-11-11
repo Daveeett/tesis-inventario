@@ -11,6 +11,11 @@ export const InventoryController = {
     try {
       const productId = req.query.productId as string | undefined;
       const movements = await InventoryService.findAll(productId);
+      if (req.auth?.role !== "ADMIN") {
+        for (const movement of movements) {
+          if (movement.product) delete (movement.product as any).purchasePrice;
+        }
+      }
       res.json({ success: true, data: movements });
     } catch (error) {
       next(error);

@@ -23,6 +23,7 @@ async function saveMovement(manager: EntityManager, data: { productId: string; t
     case MovementType.ADJUSTMENT: newStock = data.quantity; break;
     default: throw new AppError(400, "Tipo de movimiento inválido");
   }
+  if (newStock > 2147483647) throw new AppError(400, "La cantidad supera el límite permitido de stock");
   product.stock = newStock;
   await products.save(product);
   return movements.save(movements.create({ ...data, previousStock, newStock }));

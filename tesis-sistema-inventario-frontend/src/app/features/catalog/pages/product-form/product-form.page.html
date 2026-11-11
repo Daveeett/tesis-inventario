@@ -46,6 +46,7 @@
       <div class="flex flex-col sm:flex-row gap-3">
         <input
           type="text"
+          aria-label="Código de barras a buscar"
           [(ngModel)]="barcodeSearchInput"
           [ngModelOptions]="{ standalone: true }"
           (keyup.enter)="lookupBarcode()"
@@ -112,14 +113,18 @@
           <div class="md:col-span-2">
             <label class="field-label" for="name">Nombre del producto *</label>
             <input id="name" type="text" formControlName="name" class="field"
-              [class.field-invalid]="form.get('name')?.touched && form.get('name')?.invalid"
+              [class.field-invalid]="hasError('name')"
+              [attr.aria-invalid]="hasError('name')" aria-describedby="name-error"
               placeholder="Ej. Laptop HP Pavilion 15" />
+            <p *ngIf="hasError('name')" id="name-error" class="field-error" role="alert">{{ errorText('name') }}</p>
           </div>
           <div>
             <label class="field-label" for="brand">Marca *</label>
             <input id="brand" type="text" formControlName="brand" class="field"
-              [class.field-invalid]="form.get('brand')?.touched && form.get('brand')?.invalid"
+              [class.field-invalid]="hasError('brand')"
+              [attr.aria-invalid]="hasError('brand')" aria-describedby="brand-error"
               placeholder="Ej. HP, Samsung, Apple" />
+            <p *ngIf="hasError('brand')" id="brand-error" class="field-error" role="alert">{{ errorText('brand') }}</p>
           </div>
           <div>
             <label class="field-label" for="model">Modelo</label>
@@ -171,15 +176,15 @@
         </div>
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label class="field-label">Categoría</label>
-            <select formControlName="categoryId" class="field" (change)="onCategoryChange($any($event.target).value)">
+            <label class="field-label" for="categoryId">Categoría</label>
+            <select id="categoryId" formControlName="categoryId" class="field" (change)="onCategoryChange($any($event.target).value)">
               <option value="">— Seleccionar categoría —</option>
               <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="field-label">Subcategoría</label>
-            <select formControlName="subcategoryId" class="field" [disabled]="!subcategories().length">
+            <label class="field-label" for="subcategoryId">Subcategoría</label>
+            <select id="subcategoryId" formControlName="subcategoryId" class="field" [disabled]="!subcategories().length">
               <option value="">— Seleccionar subcategoría —</option>
               <option *ngFor="let s of subcategories()" [value]="s.id">{{ s.name }}</option>
             </select>
@@ -196,20 +201,33 @@
         <div class="p-6">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
             <div *ngIf="!authSvc.isVendedor()">
-              <label class="field-label">P. compra ($) *</label>
-              <input type="number" formControlName="purchasePrice" min="0" step="0.01" placeholder="0.00" class="field tnum" />
+              <label class="field-label" for="purchasePrice">P. compra ($) *</label>
+              <input id="purchasePrice" type="number" formControlName="purchasePrice" min="0" step="0.01" placeholder="0.00" class="field tnum"
+                [class.field-invalid]="hasError('purchasePrice')"
+                [attr.aria-invalid]="hasError('purchasePrice')" aria-describedby="purchasePrice-error" />
+              <p *ngIf="hasError('purchasePrice')" id="purchasePrice-error" class="field-error" role="alert">{{ errorText('purchasePrice') }}</p>
             </div>
             <div>
-              <label class="field-label">P. venta ($) *</label>
-              <input type="number" formControlName="salePrice" min="0" step="0.01" placeholder="0.00" class="field tnum" />
+              <label class="field-label" for="salePrice">P. venta ($) *</label>
+              <input id="salePrice" type="number" formControlName="salePrice" min="0" step="0.01" placeholder="0.00" class="field tnum"
+                [class.field-invalid]="hasError('salePrice')"
+                [attr.aria-invalid]="hasError('salePrice')" aria-describedby="salePrice-error" />
+              <p *ngIf="hasError('salePrice')" id="salePrice-error" class="field-error" role="alert">{{ errorText('salePrice') }}</p>
             </div>
             <div>
-              <label class="field-label">Stock actual</label>
-              <input type="number" formControlName="stock" min="0" class="field tnum" />
+              <label class="field-label" for="stock">Stock actual</label>
+              <input id="stock" type="number" formControlName="stock" min="0" class="field tnum" [readonly]="isEdit"
+                [class.field-invalid]="hasError('stock')"
+                [attr.aria-invalid]="hasError('stock')" aria-describedby="stock-error" />
+              <p *ngIf="hasError('stock')" id="stock-error" class="field-error" role="alert">{{ errorText('stock') }}</p>
+              <p *ngIf="isEdit" class="field-hint">Use entradas o salidas para modificar las existencias.</p>
             </div>
             <div>
-              <label class="field-label">Stock mínimo</label>
-              <input type="number" formControlName="minStock" min="0" class="field tnum" />
+              <label class="field-label" for="minStock">Stock mínimo</label>
+              <input id="minStock" type="number" formControlName="minStock" min="0" class="field tnum"
+                [class.field-invalid]="hasError('minStock')"
+                [attr.aria-invalid]="hasError('minStock')" aria-describedby="minStock-error" />
+              <p *ngIf="hasError('minStock')" id="minStock-error" class="field-error" role="alert">{{ errorText('minStock') }}</p>
             </div>
           </div>
 
@@ -225,7 +243,7 @@
     <!-- Actions -->
     <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-8 pb-4">
       <button type="button" class="btn-pill-ghost" (click)="cancel()">Cancelar</button>
-      <button type="submit" class="btn-pill" [disabled]="form.invalid || saving()">
+      <button type="submit" class="btn-pill" [disabled]="saving()">
         <span *ngIf="saving()" class="loader"></span>
         <ng-icon *ngIf="!saving()" name="heroCheck" class="text-sm" />
         {{ saving() ? 'Guardando…' : (isEdit ? 'Guardar cambios' : 'Crear producto') }}

@@ -75,7 +75,7 @@ export class AuthService {
     };
   }
 
-  async revokeSession(userId: string): Promise<void> {
-    await this.userRepo.update(userId, { sessionToken: null });
+  async revokeSession(userId: string, sessionToken: string): Promise<void> {
+    await this.userRepo.update({ id: userId, sessionToken }, { sessionToken: null });
   }
 }

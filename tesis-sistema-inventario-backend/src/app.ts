@@ -19,14 +19,14 @@ const createApp = () => {
     app.use(helmet());
     // CORS for Angular frontend
     app.use(cors({
-        origin: "*", // Permite acceso desde cualquier IP (ej. móvil)
+        origin: env.FRONTEND_BASE_URL.split(",").map((origin) => origin.trim()),
     }));
     // Gzip compression
     app.use(compression());
     // JSON body parser (5mb para soportar imágenes Base64)
     app.use(express.json({ limit: "5mb" }));
     // Rate limiting on API routes
-    app.use("/api", rateLimit({
+    if (!(env.NODE_ENV === "test" && process.env.BENCHMARK_DISABLE_RATE_LIMIT === "true")) app.use("/api", rateLimit({
         windowMs: 10 * 60 * 1000, // 10 minutes
         max: 600,
         standardHeaders: true,

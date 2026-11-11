@@ -55,7 +55,7 @@
               id="email"
               type="email"
               formControlName="email"
-              placeholder="vendedor@test.com"
+              placeholder="correo@ejemplo.com"
               class="field"
               [ngClass]="{ 'field-invalid': form.get('email')?.touched && form.get('email')?.invalid }"
             />
@@ -90,9 +90,6 @@
             <button type="submit" class="btn-pill flex-1" [disabled]="loading">
               <span *ngIf="loading" class="loader"></span>
               <span>{{ loading ? 'Autenticando…' : 'Acceder al sistema' }}</span>
-            </button>
-            <button type="button" (click)="fillDemoCredentials('admin')" class="btn-pill-ghost">
-              Credenciales de prueba
             </button>
           </div>
         </form>

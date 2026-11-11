@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/rou
 import { NgIconComponent } from '@ng-icons/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-layout-shell',
@@ -29,7 +30,9 @@ export class LayoutShellComponent {
   ) {}
 
   logout() {
-    this.auth.logout();
-    void this.router.navigateByUrl('/login');
+    this.auth.revokeSession().pipe(finalize(() => {
+      this.auth.logout();
+      void this.router.navigateByUrl('/login');
+    })).subscribe({ error: () => {} });
   }
 }
